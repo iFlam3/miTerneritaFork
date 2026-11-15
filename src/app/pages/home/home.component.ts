@@ -221,10 +221,6 @@ export class HomeComponent implements OnInit {
     el?.scrollBy({ left: dir * el.clientWidth * 0.85, behavior: 'smooth' });
   }
 
-  goToEvent(id: number) {
-    this.router.navigate(['/home/event', id]);
-  }
-
   buy(id: number) {
     this.router.navigate(['/home/event', id, 'ticket']);
   }

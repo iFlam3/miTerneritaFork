@@ -57,9 +57,10 @@
                             <button type="button" class="tm-btn tm-btn--primary tm-btn--lg" [class.is-soldout]="agotado(ev.idEvents)" [disabled]="agotado(ev.idEvents)" (click)="buy(ev.idEvents)">
                                 <i class="pi pi-ticket"></i> {{ agotado(ev.idEvents) ? 'SOLD OUT' : 'Comprar entradas' }}
                             </button>
-                            <button type="button" class="tm-btn tm-btn--glass tm-btn--lg" (click)="goToEvent(ev.idEvents)">
+                            <!-- Enlace real (no botón): así Google descubre la ficha del evento -->
+                            <a class="tm-btn tm-btn--glass tm-btn--lg" [routerLink]="['/home/event', ev.idEvents]">
                                 Ver detalles
-                            </button>
+                            </a>
                         </div>
 
                         @if (ev.minPrice !== null) {
@@ -243,9 +244,9 @@
                                             <button type="button" class="tm-btn tm-btn--primary" [class.is-soldout]="agotado(ev.idEvents)" [disabled]="agotado(ev.idEvents)" (click)="buy(ev.idEvents)">
                                                 <i class="pi pi-ticket"></i> {{ agotado(ev.idEvents) ? 'SOLD OUT' : 'Comprar' }}
                                             </button>
-                                            <button type="button" class="tm-btn tm-btn--glass" (click)="goToEvent(ev.idEvents)">
+                                            <a class="tm-btn tm-btn--glass" [routerLink]="['/home/event', ev.idEvents]">
                                                 Detalles
-                                            </button>
+                                            </a>
                                         </div>
                                     </div>
                                 </div>

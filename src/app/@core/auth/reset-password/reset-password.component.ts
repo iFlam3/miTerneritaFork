@@ -68,6 +68,8 @@ export class ResetPasswordComponent {
     delete formData.confirmPassword; // Eliminar el campo confirmPassword antes de enviarlo al backend
     formData.newPassword = formData.password; // Renombrar el campo password a newPassword
     delete formData.password; // Eliminar el campo password después de renombrarlo
+    // El back solo acepta el código junto al correo al que se envió.
+    (formData as any).email = this.email;
 
     this.authService.resetPassword(formData).subscribe({
       next: () => {
