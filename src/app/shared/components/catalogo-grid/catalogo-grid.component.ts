@@ -3,6 +3,7 @@ import { Component, computed, input, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { PaginatorModule, PaginatorState } from 'primeng/paginator';
 import { CheckboxModule } from 'primeng/checkbox';
+import { SelectButtonModule } from 'primeng/selectbutton';
 import { environment } from '../../../../environments/environment.developer';
 
 /** Un producto de la carta (comida o bebida) tal como lo pinta el panel. */
@@ -28,6 +29,17 @@ export interface ItemCatalogo<T = unknown> {
 const normalizar = (s: string) =>
   s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 
+const CLAVE_COLUMNAS = 'mt_catalogo_columnas';
+
+function leerColumnas(): number {
+  try {
+    const n = Number(localStorage.getItem(CLAVE_COLUMNAS));
+    return [3, 4, 5].includes(n) ? n : 3;
+  } catch {
+    return 3;
+  }
+}
+
 /**
  * Carta en tarjetas para el panel (estilo miternerita.club): foto, nombre,
  * descripción, precio en USD y estado; filtro por categoría, búsqueda y
@@ -35,7 +47,7 @@ const normalizar = (s: string) =>
  */
 @Component({
   selector: 'app-catalogo-grid',
-  imports: [DecimalPipe, FormsModule, PaginatorModule, CheckboxModule],
+  imports: [DecimalPipe, FormsModule, PaginatorModule, CheckboxModule, SelectButtonModule],
   template: `
     <div class="toolbar">
       <div class="cats" role="group" aria-label="Categorías">
@@ -46,10 +58,11 @@ const normalizar = (s: string) =>
         }
       </div>
       <input class="search" type="search" placeholder="Buscar" [ngModel]="busqueda()" (ngModelChange)="buscar($event)" aria-label="Buscar producto" />
+      <p-selectButton [options]="opcionesColumnas" [ngModel]="columnas()" (ngModelChange)="elegirColumnas($event)" optionLabel="label" optionValue="value" [allowEmpty]="false" size="small" aria-label="Columnas" />
     </div>
 
     @if (pagina().length) {
-      <div class="grid">
+      <div class="grid" [class.fijas]="columnas()" [style.--cols]="columnas()">
         @for (item of pagina(); track item.id) {
           <article class="card" [class.is-off]="!item.disponible" [class.is-selected]="seleccionados().includes(item)">
             <div class="photo">
@@ -168,6 +181,11 @@ const normalizar = (s: string) =>
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
       gap: 16px;
+
+      /* Como mucho --cols columnas; si no caben a 160px cada una, baja solas. */
+      &.fijas {
+        grid-template-columns: repeat(auto-fill, minmax(max(160px, calc((100% - (var(--cols) - 1) * 16px) / var(--cols))), 1fr));
+      }
     }
 
     .card {
@@ -376,6 +394,14 @@ export class CatalogoGridComponent<T> {
   primero = signal(0);
   filas = signal(20);
 
+  readonly opcionesColumnas = [
+    { label: '3', value: 3 },
+    { label: '4', value: 4 },
+    { label: '5', value: 5 }
+  ];
+  /** 3, 4 o 5 columnas; se recuerda por dispositivo. */
+  columnas = signal(leerColumnas());
+
   private ordenados = computed(() =>
     [...this.items()].sort(
       (a, b) =>
@@ -414,6 +440,13 @@ export class CatalogoGridComponent<T> {
   paginar(e: PaginatorState) {
     this.primero.set(e.first ?? 0);
     this.filas.set(e.rows ?? 20);
+  }
+
+  elegirColumnas(n: number) {
+    this.columnas.set(n);
+    try {
+      localStorage.setItem(CLAVE_COLUMNAS, String(n));
+    } catch {}
   }
 
   alternar(item: ItemCatalogo<T>) {

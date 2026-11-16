@@ -46,7 +46,7 @@ import { PlanoSalonComponent } from '../../shared/components/plano-salon/plano-s
         </div>
 
         @if (!idEvento()) {
-          <p class="vacio">Elige un evento para asignar sus mesas.</p>
+          <p class="vacio">{{ eventosOrdenados().length ? 'Elige un concierto para asignar sus mesas.' : 'No hay conciertos. Crea un evento de tipo Concierto para usar el mapa.' }}</p>
         } @else if (cargando() || !plano()) {
           <div class="tm-skeleton mapa-sk" role="status" aria-label="Cargando mapa"></div>
         } @else if (!tickets().length) {
@@ -216,7 +216,8 @@ export class SalonComponent {
 
   readonly plano = toSignal(this.salonService.plano$);
   readonly eventos = signal<Event[]>([]);
-  readonly eventosOrdenados = computed(() => [...this.eventos()].sort((a, b) => byDateAsc(b, a)));
+  /** El mapa es solo para conciertos. */
+  readonly eventosOrdenados = computed(() => this.eventos().filter(e => eventCategory(e) === 'concierto').sort((a, b) => byDateAsc(b, a)));
   readonly idEvento = signal<number | null>(null);
   readonly tickets = signal<Ticket[]>([]);
   /** { [mesa]: idTicket } tal como se ve en pantalla. */

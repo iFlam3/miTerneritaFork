@@ -3,7 +3,6 @@ import { inject, Injectable } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs';
 import { environment } from '../../../environments/environment.developer';
-import { puedeVerPanel } from '../auth/roles';
 
 const VISITANTE_KEY = 'mt_visitante';
 const SESION_KEY = 'mt_sesion';
@@ -109,7 +108,8 @@ export class VisitasService {
 
   private ids(): { visitante: string; sesion: string } | null {
     try {
-      if (puedeVerPanel(JSON.parse(localStorage.getItem('user') ?? 'null')?.role)) return null;
+      // El personal y el admin no cuentan como visitas.
+      if (['admin', 'user'].includes(JSON.parse(localStorage.getItem('user') ?? 'null')?.role)) return null;
       let visitante = localStorage.getItem(VISITANTE_KEY);
       if (!visitante) {
         visitante = uuid();
