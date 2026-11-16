@@ -346,3 +346,71 @@
     font-weight: 700;
   }
 }
+
+// Volver al paso anterior, sobre el título.
+.volver {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 40px;
+  margin: 0 0 0.6rem -0.5rem;
+  padding: 0 0.75rem 0 0.5rem;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+
+  @media (hover: hover) {
+    &:hover {
+      background: var(--surface-2);
+      color: var(--text);
+    }
+  }
+}
+
+// Móvil: etiqueta arriba y dato abajo, a todo el ancho; el número no se parte.
+@media (max-width: 560px) {
+  .bank-rows {
+    li {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      grid-template-areas:
+        'label copy'
+        'valor copy';
+      column-gap: 0.5rem;
+      row-gap: 0.1rem;
+    }
+
+    span {
+      grid-area: label;
+      width: auto;
+      font-size: 0.78rem;
+    }
+
+    strong {
+      grid-area: valor;
+      overflow-wrap: normal;
+      word-break: normal;
+      font-size: 1.02rem;
+    }
+
+    .copy {
+      grid-area: copy;
+      width: 44px;
+      height: 44px;
+    }
+  }
+
+  .bank-amount strong {
+    font-size: 1.45rem;
+  }
+
+  .copy-all {
+    padding: 0 0.75rem;
+    text-align: center;
+  }
+}

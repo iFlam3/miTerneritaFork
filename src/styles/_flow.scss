@@ -120,7 +120,7 @@
 
 @media (max-width: 1024px) {
   .tm-flow-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr); // 1fr crecería al ancho de los filtros y se saldría
   }
 
   .tm-flow .summary {
