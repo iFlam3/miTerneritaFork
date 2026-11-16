@@ -2,6 +2,7 @@ import { DatePipe, DecimalPipe } from '@angular/common';
 import { Component, computed, ElementRef, inject, signal, viewChild } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { MessageService } from 'primeng/api';
 import { forkJoin, startWith, switchMap } from 'rxjs';
@@ -38,7 +39,7 @@ interface Grupo {
  */
 @Component({
   selector: 'app-tickets',
-  imports: [DatePipe, DecimalPipe, FormsModule, LoaderComponent],
+  imports: [DatePipe, DecimalPipe, FormsModule, LoaderComponent, RouterLink],
   templateUrl: './tickets.component.html',
   styleUrl: './tickets.component.scss'
 })

@@ -49,6 +49,9 @@ export interface LineaResumen {
             </li>
           }
         </ul>
+        @if (asientos().length) {
+          <p class="puestos"><i class="pi pi-map-marker"></i> Puestos {{ asientos().join(', ') }}</p>
+        }
       </section>
     }
 
@@ -183,6 +186,18 @@ export interface LineaResumen {
       }
     }
 
+    .puestos {
+      margin: 0.35rem 0 0;
+      color: var(--text-muted);
+      font-size: 0.82rem;
+      font-weight: 600;
+
+      .pi {
+        margin-right: 0.25rem;
+        font-size: 0.75rem;
+      }
+    }
+
     .acceso {
       justify-self: start;
       margin-top: 0.2rem;
@@ -288,6 +303,8 @@ export class PriceSummaryComponent {
 
   entradas = input<LineaResumen[]>([]);
   consumo = input<LineaResumen[]>([]);
+  /** Puestos elegidos en el mapa del salón ("5A"). */
+  asientos = input<string[]>([]);
   /** Muestra la X para quitar cada entrada (paso de entradas). */
   quitable = input(false);
   vacio = input('Aún no has elegido nada.');

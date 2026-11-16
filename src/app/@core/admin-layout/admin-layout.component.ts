@@ -57,6 +57,7 @@ export class AdminLayoutComponent implements OnInit {
       items: [
         { name: 'Eventos', icon: 'pi pi-calendar', routerLink: '/admin/events' },
         { name: 'Entradas', icon: 'pi pi-ticket', routerLink: '/admin/tickets' },
+        { name: 'Mapa de mesas', icon: 'pi pi-map', routerLink: '/admin/salon' },
         { name: 'Pagos', icon: 'pi pi-wallet', routerLink: '/admin/payments' },
         { name: 'Reportes', icon: 'pi pi-file-pdf', routerLink: '/admin/reportes' },
         { name: 'Bebidas', icon: 'pi ico ico-copa', routerLink: '/admin/drinks' },

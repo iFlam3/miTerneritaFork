@@ -38,6 +38,8 @@ export class ConsumeComponent implements OnInit {
   wallpaper = signal('');
   /** Entradas elegidas en el paso anterior. */
   selected: SelectedItem[] = [];
+  /** Puestos elegidos en el mapa del salón ("5A"). */
+  asientos: string[] = [];
 
   menu = signal<MenuEvento | null>(null);
   loading = signal(true);
@@ -87,6 +89,7 @@ export class ConsumeComponent implements OnInit {
   ngOnInit(): void {
     this.idEvent = Number(this.route.snapshot.paramMap.get('id'));
     this.selected = (history.state?.selected as SelectedItem[]) ?? [];
+    this.asientos = (history.state?.asientos as string[]) ?? [];
 
     this.eventsService.getEventById(this.idEvent).subscribe({
       next: event => {
@@ -145,7 +148,7 @@ export class ConsumeComponent implements OnInit {
     }
 
     this.router.navigate(['/home/event', this.idEvent, 'ticket', 'checkout'], {
-      state: { selected: this.selected, consumo: this.lineas() },
+      state: { selected: this.selected, consumo: this.lineas(), asientos: this.asientos },
       replaceUrl: !this.menu()
     });
   }

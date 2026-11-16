@@ -69,6 +69,38 @@
 .map-head {
   padding-top: 1.5rem;
   border-top: 1px solid var(--border);
+  scroll-margin: calc(var(--nav-h) + 20px);
+}
+
+// Entradas con mesa: en vez de +/- se eligen los puestos en el mapa.
+.por-mapa {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 44px;
+  padding: 0 1rem;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+
+  @media (hover: hover) {
+    &:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+  }
+}
+
+.has-qty .por-mapa {
+  border-color: var(--primary);
+  background: var(--primary-soft);
+  color: var(--primary);
 }
 
 @media (max-width: 560px) {
@@ -115,7 +147,8 @@
     color: var(--text-muted);
   }
 
-  .tm-qty {
+  .tm-qty,
+  .por-mapa {
     grid-area: qty;
   }
 }

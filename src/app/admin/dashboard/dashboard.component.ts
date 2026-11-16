@@ -25,10 +25,11 @@ const LIMIT: Record<Filter, number> = { day: 14, week: 12, month: 12, year: 6 };
 
 import { CapFirstPipe } from '../../shared/pipes/cap-first.pipe';
 import { AvatarComponent, avatarSeed } from '../../shared/components/avatar/avatar.component';
+import { VisitasPanelComponent } from './components/visitas-panel/visitas-panel.component';
 
 @Component({
   selector: 'app-dashboard',
-  imports: [AvatarComponent, CapFirstPipe, ChartModule, DatePipe, DecimalPipe, FormsModule, RouterLink, SelectButtonModule],
+  imports: [AvatarComponent, CapFirstPipe, ChartModule, DatePipe, DecimalPipe, FormsModule, RouterLink, SelectButtonModule, VisitasPanelComponent],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss'
 })

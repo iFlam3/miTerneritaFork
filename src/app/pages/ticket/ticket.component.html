@@ -54,25 +54,41 @@
                                 <small>Precio por persona</small>
                             </div>
                             <strong class="option-price">${{ price(zone) | number: '1.2-2' }}</strong>
-                            <div class="tm-qty">
-                                <button type="button" [attr.aria-label]="'Quitar una entrada ' + zone.name" [disabled]="qty(zone) === 0" (click)="decrement(zone)">
-                                    <i class="pi pi-minus"></i>
+                            @if (conMesa().has(zone.idTicket)) {
+                                <!-- Entradas con mesa: la cantidad sale de los puestos elegidos en el mapa -->
+                                <button type="button" class="por-mapa" (click)="irAlMapa()" aria-live="polite">
+                                    <i class="pi pi-map"></i>
+                                    {{ qty(zone) ? qty(zone) + (qty(zone) === 1 ? ' puesto' : ' puestos') : 'Elige en el mapa' }}
                                 </button>
-                                <output aria-live="polite">{{ qty(zone) }}</output>
-                                <button type="button" [attr.aria-label]="'Agregar una entrada ' + zone.name" [disabled]="count() >= max" (click)="increment(zone)">
-                                    <i class="pi pi-plus"></i>
-                                </button>
-                            </div>
+                            } @else {
+                                <div class="tm-qty">
+                                    <button type="button" [attr.aria-label]="'Quitar una entrada ' + zone.name" [disabled]="qty(zone) === 0" (click)="decrement(zone)">
+                                        <i class="pi pi-minus"></i>
+                                    </button>
+                                    <output aria-live="polite">{{ qty(zone) }}</output>
+                                    <button type="button" [attr.aria-label]="'Agregar una entrada ' + zone.name" [disabled]="count() >= max" (click)="increment(zone)">
+                                        <i class="pi pi-plus"></i>
+                                    </button>
+                                </div>
+                            }
                         </li>
                     }
                 </ul>
 
-                @if (isConcert()) {
-                    <div class="block-head map-head">
-                        <h2>Mapa del salón</h2>
-                        <span class="tm-muted">Toca una zona para agregarla</span>
+                @if (plano() && salon(); as estado) {
+                    <div class="block-head map-head" id="mapa-salon">
+                        <h2>Elige tus puestos</h2>
+                        <span class="tm-muted">Toca un puesto, o el número de la mesa para tomarla completa</span>
                     </div>
-                    <app-salon-map [zones]="mapZones()" [active]="activeZone()" (pick)="onPick($event)" />
+                    <app-plano-salon
+                        [plano]="plano()!"
+                        [zonas]="estado.zonas"
+                        [tickets]="zones()"
+                        [ocupados]="estado.ocupados"
+                        [seleccion]="asientos()"
+                        (asiento)="onAsiento($event)"
+                        (mesa)="onMesa($event)"
+                    />
                 }
             } @else {
                 <div class="tm-empty">
@@ -87,7 +103,7 @@
             <div class="tm-card tm-card--pad summary-card">
                 <h2>Tu compra</h2>
 
-                <app-price-summary [entradas]="selected()" [quitable]="true" (quitar)="clearSelection($event)" vacio="Aún no has elegido entradas." />
+                <app-price-summary [entradas]="selected()" [asientos]="asientosOrdenados()" [quitable]="true" (quitar)="clearSelection($event)" vacio="Aún no has elegido entradas." />
 
                 <button type="button" class="tm-btn tm-btn--primary tm-btn--block tm-btn--lg continue" [disabled]="!canContinue() || reservando()" (click)="goToCheckout()">
                     Continuar <i class="pi pi-arrow-right"></i>

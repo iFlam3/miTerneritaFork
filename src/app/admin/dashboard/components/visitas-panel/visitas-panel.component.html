@@ -1,0 +1,234 @@
+<section class="visitas" aria-labelledby="visitas-titulo">
+    <header class="head">
+        <div>
+            <h2 id="visitas-titulo">Visitas del sitio</h2>
+            <p class="tm-muted">Anónimas: sin datos personales. No cuentan el personal ni el admin.</p>
+        </div>
+        <div class="head-acciones">
+            <span class="en-linea" role="status" aria-live="polite">
+                <i class="pulso" aria-hidden="true"></i>
+                <strong>{{ enLinea()?.activas ?? '—' }}</strong> en línea
+                @if (enLinea()?.comprando) {
+                    · <strong>{{ enLinea()!.comprando }}</strong> comprando
+                }
+            </span>
+            <p-selectButton [options]="rangos" [ngModel]="dias()" (ngModelChange)="dias.set($event)" optionLabel="label" optionValue="value" [allowEmpty]="false" size="small" aria-label="Período" />
+        </div>
+    </header>
+
+    @if (cargando() && !resumen()) {
+        <div class="kpis">
+            @for (s of [0, 1, 2, 3, 4, 5]; track s) {
+                <div class="tm-skeleton kpi-sk"></div>
+            }
+        </div>
+    } @else if (error() && !resumen()) {
+        <p class="vacio"><i class="pi pi-exclamation-circle"></i> No se pudieron cargar las visitas.</p>
+    } @else if (resumen()) {
+        @let r = resumen()!;
+        <div class="cuerpo" [class.recargando]="cargando()">
+            <!-- Indicadores -->
+            <div class="kpis">
+                <div class="kpi">
+                    <span class="etq"><i class="pi pi-eye"></i> Visitas</span>
+                    <strong>{{ r.visitas | number }}</strong>
+                    <small>{{ r.paginasPorVisita | number: '1.0-1' }} páginas por visita</small>
+                </div>
+                <div class="kpi">
+                    <span class="etq"><i class="pi pi-users"></i> Visitantes</span>
+                    <strong>{{ r.visitantes | number }}</strong>
+                    <small>{{ nuevos() }} nuevos · {{ r.recurrentes }} volvieron</small>
+                </div>
+                <div class="kpi">
+                    <span class="etq"><i class="pi pi-clock"></i> Tiempo en el sitio</span>
+                    <strong>{{ duracion(r.duracionPromedioSeg) }}</strong>
+                    <small>promedio por visita</small>
+                </div>
+                <div class="kpi">
+                    <span class="etq"><i class="pi pi-sign-out"></i> Rebote</span>
+                    <strong>{{ r.rebote }}%</strong>
+                    <small>se fueron en menos de 30 s</small>
+                </div>
+                <div class="kpi">
+                    <span class="etq"><i class="pi pi-shopping-cart"></i> Conversión</span>
+                    <strong>{{ conversion() | number: '1.0-1' }}%</strong>
+                    <small>{{ r.compra.compras }} {{ r.compra.compras === 1 ? 'pago enviado' : 'pagos enviados' }}</small>
+                </div>
+                <div class="kpi">
+                    <span class="etq"><i class="pi pi-bolt"></i> Hora pico</span>
+                    <strong>{{ r.horaPico === null ? '—' : hora12(r.horaPico) }}</strong>
+                    <small>cuando más se conectan</small>
+                </div>
+            </div>
+
+            @if (!r.visitas) {
+                <p class="vacio"><i class="pi pi-chart-line"></i> Aún no hay visitas en este período. Se cuentan desde esta versión del sitio.</p>
+            } @else {
+                <div class="fila">
+                    <article class="panel span-8">
+                        <header class="panel-head">
+                            <div>
+                                <h3>{{ r.dias === 1 ? 'Visitas de hoy por hora' : 'Visitas por día' }}</h3>
+                                <p class="tm-muted">Hora de Venezuela</p>
+                            </div>
+                        </header>
+                        <div class="chart">
+                            <p-chart type="line" [data]="tendencia()" [options]="ejes()" height="100%" />
+                        </div>
+                    </article>
+
+                    <article class="panel span-4">
+                        <header class="panel-head">
+                            <div>
+                                <h3>Desde dónde entran</h3>
+                                <p class="tm-muted">{{ movilPct() }}% desde el teléfono</p>
+                            </div>
+                        </header>
+                        <div class="dona">
+                            <div class="dona-chart">
+                                <p-chart type="doughnut" [data]="dispositivosChart()" [options]="dona" height="100%" />
+                                <div class="dona-centro">
+                                    <strong>{{ r.visitas | number }}</strong>
+                                    <small>visitas</small>
+                                </div>
+                            </div>
+                            <ul class="leyenda">
+                                <li><i class="dot movil"></i> Móvil <strong>{{ r.dispositivos.movil }}</strong></li>
+                                <li><i class="dot pc"></i> Computadora <strong>{{ r.dispositivos.escritorio }}</strong></li>
+                            </ul>
+                        </div>
+                    </article>
+                </div>
+
+                @if (r.dias > 1) {
+                    <div class="fila">
+                        <article class="panel span-6">
+                            <header class="panel-head">
+                                <div>
+                                    <h3>¿A qué hora se conectan?</h3>
+                                    <p class="tm-muted">Visitas por hora del día · pico en <strong class="pico">{{ hora12(r.horaPico ?? 0) }}</strong></p>
+                                </div>
+                            </header>
+                            <div class="chart">
+                                <p-chart type="bar" [data]="horasChart()" [options]="ejes()" height="100%" />
+                            </div>
+                        </article>
+
+                        <article class="panel span-6">
+                            <header class="panel-head">
+                                <div>
+                                    <h3>Día y hora</h3>
+                                    <p class="tm-muted">Más intenso = más visitas</p>
+                                </div>
+                            </header>
+                            <div class="calor-scroll">
+                                <div class="calor" role="table" aria-label="Visitas por día de la semana y hora">
+                                    <span class="esquina" aria-hidden="true"></span>
+                                    @for (h of horas; track h) {
+                                        <span class="h-etq" aria-hidden="true">{{ h % 3 === 0 ? hora12(h) : '' }}</span>
+                                    }
+                                    @for (fila of calor(); track $index; let d = $index) {
+                                        <span class="d-etq">{{ diasSemana[d] }}</span>
+                                        @for (celda of fila; track $index; let h = $index) {
+                                            <span
+                                                class="celda"
+                                                [style.--i]="celda.pct"
+                                                [class.cero]="!celda.v"
+                                                [attr.title]="diasSemana[d] + ' ' + hora12(h) + ': ' + celda.v + (celda.v === 1 ? ' visita' : ' visitas')"
+                                            ></span>
+                                        }
+                                    }
+                                </div>
+                            </div>
+                        </article>
+                    </div>
+                }
+
+                <div class="fila">
+                    <article class="panel span-6">
+                        <header class="panel-head">
+                            <div>
+                                <h3>Embudo de compra</h3>
+                                <p class="tm-muted">Visitas que llegan a cada paso</p>
+                            </div>
+                        </header>
+                        <ol class="embudo">
+                            @for (p of embudo(); track p.etiqueta) {
+                                <li>
+                                    <div class="embudo-txt">
+                                        <span>{{ p.etiqueta }}</span>
+                                        <span>
+                                            <strong>{{ p.sesiones | number }}</strong>
+                                            @if (p.sigue !== null) {
+                                                <small [class.baja]="p.sigue < 50">{{ p.sigue }}% sigue</small>
+                                            }
+                                        </span>
+                                    </div>
+                                    <div class="barra"><span [style.width.%]="p.ancho"></span></div>
+                                </li>
+                            }
+                        </ol>
+                    </article>
+
+                    <article class="panel span-6">
+                        <header class="panel-head">
+                            <div>
+                                <h3>Tiempos del cliente</h3>
+                                <p class="tm-muted">Mediana (la mitad tarda menos) y promedio</p>
+                            </div>
+                        </header>
+                        <div class="tiempos">
+                            <div class="tiempo">
+                                <span class="etq"><i class="pi pi-stopwatch"></i> Para comprar</span>
+                                <strong>{{ duracion(r.compra.medianaSeg) }}</strong>
+                                <small>Promedio {{ duracion(r.compra.promedioSeg) }} · de elegir entradas a enviar el pago</small>
+                            </div>
+                            <div class="tiempo">
+                                <span class="etq"><i class="pi pi-hourglass"></i> Espera de verificación</span>
+                                <strong>{{ duracion(r.verificacion.medianaSeg) }}</strong>
+                                <small>
+                                    @if (r.verificacion.revisados) {
+                                        Promedio {{ duracion(r.verificacion.promedioSeg) }} · {{ r.verificacion.revisados }} {{ r.verificacion.revisados === 1 ? 'pago revisado' : 'pagos revisados' }}
+                                    } @else {
+                                        Se mide desde que el admin aprueba o rechaza pagos con esta versión
+                                    }
+                                </small>
+                            </div>
+                            <a class="pendientes" routerLink="/admin/payments" [class.alerta]="(r.verificacion.esperaMasLargaSeg ?? 0) > 86400">
+                                <i class="pi pi-inbox"></i>
+                                @if (r.verificacion.pendientes) {
+                                    <span><strong>{{ r.verificacion.pendientes }}</strong> {{ r.verificacion.pendientes === 1 ? 'pago espera' : 'pagos esperan' }} revisión · el más antiguo hace {{ duracion(r.verificacion.esperaMasLargaSeg) }}</span>
+                                } @else {
+                                    <span>No hay pagos esperando revisión</span>
+                                }
+                                <i class="pi pi-angle-right"></i>
+                            </a>
+                        </div>
+                    </article>
+                </div>
+
+                @if (r.topEventos.length) {
+                    <article class="panel">
+                        <header class="panel-head">
+                            <div>
+                                <h3>Eventos más vistos</h3>
+                                <p class="tm-muted">Visitas a la página del evento y pagos enviados</p>
+                            </div>
+                        </header>
+                        <ul class="top">
+                            @for (e of r.topEventos; track e.idEvents; let i = $index) {
+                                <li>
+                                    <span class="pos">{{ i + 1 }}</span>
+                                    <span class="nombre">{{ e.nombre }}</span>
+                                    <span class="dato"><strong>{{ e.visitas | number }}</strong> <small>visitas</small></span>
+                                    <span class="dato"><strong>{{ e.compras | number }}</strong> <small>pagos</small></span>
+                                    <span class="dato conv"><strong>{{ (e.visitas ? (e.compras / e.visitas) * 100 : 0) | number: '1.0-1' }}%</strong> <small>conversión</small></span>
+                                </li>
+                            }
+                        </ul>
+                    </article>
+                }
+            }
+        </div>
+    }
+</section>

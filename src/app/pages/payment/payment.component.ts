@@ -56,6 +56,8 @@ const CAMPOS_CUENTA: Record<Method, [string, string][]> = {
 
 import { CapFirstPipe } from '../../shared/pipes/cap-first.pipe';
 
+import { VisitasService } from '../../@core/services/visitas.service';
+
 @Component({
   selector: 'app-payment',
   imports: [CapFirstPipe, DatePipe, DecimalPipe, ReactiveFormsModule, RouterLink, PurchaseStepsComponent, PriceSummaryComponent],
@@ -67,6 +69,7 @@ export class PaymentComponent implements OnInit, OnDestroy {
   private messageService = inject(MessageService);
   private tasaService = inject(TasaService);
   private timerService = inject(TimerServiceService);
+  private visitas = inject(VisitasService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private location = inject(Location);
@@ -259,6 +262,10 @@ export class PaymentComponent implements OnInit, OnDestroy {
       );
     }
 
+    // Puestos apartados en el mapa del salón ("5A"): pasan a vendidos con el pago.
+    const asientos: string[] = this.paymentData?.asientos ?? [];
+    if (asientos.length) fd.append('asientos', JSON.stringify(asientos));
+
     // 2. Iterar solo los campos relevantes del formulario
     Object.entries(fv).forEach(([k, v]) => {
       if (v instanceof File) {
@@ -294,6 +301,7 @@ export class PaymentComponent implements OnInit, OnDestroy {
       next: () => {
         this.submitting.set(false);
         this.timerService.resetCheckout();
+        this.visitas.pagado(this.idEvents);
         this.removeSelectedFile();
         this.paymentfForm.reset();
         this.ref = this.dialogService.open(SucceededPaymentModalComponent, {

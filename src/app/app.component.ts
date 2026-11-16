@@ -4,6 +4,7 @@ import { RouterOutlet } from '@angular/router';
 import { ToastModule } from 'primeng/toast';
 import { LoaderComponent } from './@core/components/loader/loader.component';
 import { ThemeService } from './@core/services/theme.service';
+import { VisitasService } from './@core/services/visitas.service';
 
 @Component({
   selector: 'app-root',
@@ -22,5 +23,7 @@ export class AppComponent {
   constructor() {
     // Compensa la barra de navegación fija al saltar a un #ancla (p. ej. /#eventos).
     inject(ViewportScroller).setOffset([0, 88]);
+    // Visitas anónimas del sitio público para el panel del dashboard.
+    inject(VisitasService).iniciar();
   }
 }

@@ -14,9 +14,9 @@ export class EventsService {
   private refreshEvents$ = new Subject<void>();
   public refreshEventsObservable$ = this.refreshEvents$.asObservable();
 
-  /** Aparta entradas mientras se paga (aforo por evento); devuelve cuándo vence. */
-  reservar(idEvents: number, cantidad: number) {
-    return this.http.post<{ vence: string }>(`${this.api}/reservas`, { idEvents, cantidad });
+  /** Aparta entradas mientras se paga (aforo por evento) y los puestos del mapa ("5A"); devuelve cuándo vence. */
+  reservar(idEvents: number, cantidad: number, asientos: string[] = []) {
+    return this.http.post<{ vence: string }>(`${this.api}/reservas`, { idEvents, cantidad, asientos });
   }
 
   /** Ids de eventos agotados (SOLD OUT). Público, sin cantidades. */

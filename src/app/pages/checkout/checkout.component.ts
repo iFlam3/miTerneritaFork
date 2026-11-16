@@ -36,6 +36,8 @@ export class CheckoutComponent implements OnInit {
   selected: SelectedItem[] = [];
   /** Comida y bebida apartadas en el paso de consumo. */
   consumo: LineaConsumo[] = [];
+  /** Puestos elegidos en el mapa del salón ("5A"). */
+  asientos: string[] = [];
   total = 0;
 
   event = signal<Event | null>(null);
@@ -56,6 +58,7 @@ export class CheckoutComponent implements OnInit {
     this.idEvents = Number(this.route.snapshot.paramMap.get('id'));
     this.selected = (history.state?.selected as SelectedItem[]) ?? [];
     this.consumo = (history.state?.consumo as LineaConsumo[]) ?? [];
+    this.asientos = (history.state?.asientos as string[]) ?? [];
     const accesos = this.consumo.reduce((acc, l) => acc + l.personas * l.cantidad, 0);
 
     // Se llegó sin entradas ni botella con acceso (p. ej. enlace directo): volvemos a elegir
@@ -102,6 +105,7 @@ export class CheckoutComponent implements OnInit {
       total: this.total,
       ticket: this.selected,
       consumo: this.consumo,
+      asientos: this.asientos,
       event: this.event()
     };
 

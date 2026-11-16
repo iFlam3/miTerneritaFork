@@ -82,7 +82,7 @@
             <div class="tm-card tm-card--pad summary-card">
                 <h2>Tu compra</h2>
 
-                <app-price-summary [entradas]="selected" [consumo]="lineas()" vacio="Agrega una entrada o una botella con acceso." />
+                <app-price-summary [entradas]="selected" [consumo]="lineas()" [asientos]="asientos" vacio="Agrega una entrada o una botella con acceso." />
 
                 <button type="button" class="tm-btn tm-btn--primary tm-btn--block tm-btn--lg continue" (click)="continue()">
                     Continuar <i class="pi pi-arrow-right"></i>
