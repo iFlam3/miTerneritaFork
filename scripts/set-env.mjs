@@ -1,11 +1,12 @@
 // Genera src/environments/environment.production.ts desde la variable API_URL.
 // angular.json (configuracion production) lo usa en lugar de environment.developer.ts.
-// El archivo generado no se versiona: se crea en cada build (build:railway).
+// El archivo generado no se versiona: se crea en cada build (prebuild).
 import { writeFileSync } from 'node:fs';
 
-const raw = process.env.API_URL?.trim();
-if (!raw || !/^https?:\/\//.test(raw)) {
-  console.error('set-env: define API_URL (p. ej. https://api.midominio.com)');
+// Sin API_URL (p. ej. Vercel sin configurar) se usa el backend actual de Render.
+const raw = process.env.API_URL?.trim() || 'https://miterneritaback.onrender.com';
+if (!/^https?:\/\//.test(raw)) {
+  console.error('set-env: API_URL debe empezar por http(s)://');
   process.exit(1);
 }
 const api = raw.replace(/\/+$/, '');
