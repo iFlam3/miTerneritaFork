@@ -67,7 +67,7 @@ export class EventsService {
     return this.http.get<EventPhoto[]>(`${this.api}/events/${id}/photos`);
   }
 
-  /** Una tanda de fotos .webp (el backend acepta hasta 20 por petición). */
+  /** Una tanda de fotos; el backend las guarda como .webp y acepta hasta 20 por petición. */
   uploadPhotos(id: number, files: File[]) {
     const fd = new FormData();
     files.forEach(f => fd.append('photos', f));

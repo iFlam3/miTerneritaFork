@@ -7,13 +7,14 @@ import { eventImage } from '../../../../@core/utils/event-utils';
 
 /** Fotos por petición (el backend acepta hasta 20). */
 const TANDA = 10;
-const esWebp = (f: File) => f.name.toLowerCase().endsWith('.webp');
+// Por extensión: en las carpetas arrastradas el tipo MIME a veces llega vacío. El backend las pasa a .webp.
+const esImagen = (f: File) => /\.(jpe?g|png|webp|avif|gif|tiff?)$/i.test(f.name);
 const leerLote = (lector: FileSystemDirectoryReader) =>
   new Promise<FileSystemEntry[]>((ok, ko) => lector.readEntries(ok, ko));
 
 /**
  * Galería del evento en el modal de edición: el admin suelta fotos o carpetas
- * enteras (.webp) y se suben al instante, en tandas. Los clientes solo las ven.
+ * enteras (JPG, PNG, WebP, AVIF...) y se suben al instante, en tandas. Los clientes solo las ven.
  */
 @Component({
   selector: 'app-event-photos',
@@ -35,13 +36,13 @@ const leerLote = (lector: FileSystemDirectoryReader) =>
         } @else {
           <i class="pi pi-images" aria-hidden="true"></i>
           <strong>Arrastra aquí las fotos o una carpeta</strong>
-          <small>Solo .webp · se suben al instante y los clientes las ven en la página del evento</small>
+          <small>JPG, PNG, WebP o AVIF · se suben al instante y los clientes las ven en la página del evento</small>
           <div class="botones">
             <button type="button" class="adm-btn adm-btn--ghost" (click)="archivos.click()"><i class="pi pi-image"></i> Elegir fotos</button>
             <button type="button" class="adm-btn adm-btn--ghost" (click)="carpeta.click()"><i class="pi pi-folder-open"></i> Elegir carpeta</button>
           </div>
         }
-        <input #archivos type="file" accept=".webp,image/webp" multiple hidden (change)="elegir(archivos)" />
+        <input #archivos type="file" accept="image/*" multiple hidden (change)="elegir(archivos)" />
         <input #carpeta type="file" webkitdirectory multiple hidden (change)="elegir(carpeta)" />
       </div>
 
@@ -197,10 +198,10 @@ export class EventPhotosComponent implements OnInit {
   }
 
   private subir(todos: File[]) {
-    const fotos = todos.filter(esWebp);
+    const fotos = todos.filter(esImagen);
     const omitidas = todos.length - fotos.length;
     if (omitidas) {
-      this.messageService.add({ severity: 'warn', summary: 'Fotos', detail: `${omitidas} archivo(s) no son .webp y se omitieron` });
+      this.messageService.add({ severity: 'warn', summary: 'Fotos', detail: `${omitidas} archivo(s) no son imágenes y se omitieron` });
     }
     if (!fotos.length || this.subiendo()) return;
 
