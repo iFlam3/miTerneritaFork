@@ -30,6 +30,12 @@ export class UsersService {
     );
   }
 
+  updateRole(id: number, role: string){
+    return this.http.patch(`${this.api}/users/${id}/role`, { role }).pipe(
+      tap(() => this.refreshUsers$.next())
+    );
+  }
+
   deleteUser(id: number){
     return this.http.delete(`${this.api}/users/${id}`).pipe(
       tap(() => {

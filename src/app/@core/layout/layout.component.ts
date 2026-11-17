@@ -17,7 +17,7 @@ interface NavItem {
   route?: string;
 }
 
-import { puedeVerPanel } from '../auth/roles';
+import { puedeEscanear, puedeVerPanel } from '../auth/roles';
 @Component({
   selector: 'app-layout',
   imports: [
@@ -86,6 +86,8 @@ export class LayoutComponent implements OnInit {
   user = computed(() => (this.authService.isAuthenticated() ? this.authService.getUser() : null));
   readonly seed = avatarSeed;
   isStaff = computed(() => puedeVerPanel(this.user()?.role));
+  /** Personal y admin: acceso al escáner de la puerta. */
+  canScan = computed(() => puedeEscanear(this.user()?.role));
 
   constructor() {
     // Bloquea el scroll del fondo con el menú móvil abierto

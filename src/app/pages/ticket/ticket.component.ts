@@ -10,6 +10,7 @@ import { Ticket } from '../../@core/models/ticket.model';
 import { Event } from '../../@core/models/event.model';
 import { EventsService } from '../../@core/services/events.service';
 import { SalonService } from '../../@core/services/salon.service';
+import { AuthService } from '../../@core/services/auth.service';
 import { EstadoSalon, PlanoSalon } from '../../@core/models/salon.model';
 import { byDateAsc, eventCategory, eventImage, formatTime12, isPastEvent, parseEventDate } from '../../@core/utils/event-utils';
 import { PurchaseStepsComponent } from '../../shared/components/purchase-steps/purchase-steps.component';
@@ -42,6 +43,7 @@ export class TicketComponent implements OnInit {
   private timerService = inject(TimerServiceService);
   private route = inject(ActivatedRoute);
   private salonService = inject(SalonService);
+  private auth = inject(AuthService);
   private destroyRef = inject(DestroyRef);
 
   readonly max = MAX_TICKETS;
@@ -244,6 +246,13 @@ export class TicketComponent implements OnInit {
         summary: 'Elige tus entradas',
         detail: 'Debes seleccionar al menos una entrada antes de continuar.'
       });
+      return;
+    }
+
+    // Ver precios y mapa es público; apartar necesita sesión.
+    if (!this.auth.isAuthenticated()) {
+      this.messageService.add({ severity: 'info', summary: 'Inicia sesión', detail: 'Inicia sesión para apartar tus entradas.' });
+      this.router.navigate(['/login'], { queryParams: { returnUrl: this.router.url } });
       return;
     }
 

@@ -2,7 +2,7 @@
     <header class="empleo-head" appReveal>
         <p class="tm-eyebrow"><i class="pi pi-briefcase"></i> Trabaja con nosotros</p>
         <h1 class="tm-h1">Únete al equipo</h1>
-        <p class="tm-lead">Buscamos gente con buena energía para nuestras noches. Elige uno de los puestos abiertos, déjanos tus datos y te contactamos.</p>
+        <p class="tm-lead">Buscamos gente con buena energía para nuestras noches.@if (puestos()?.length) { Elige uno de los puestos abiertos, déjanos tus datos y te contactamos.}</p>
     </header>
 
     @if (puestos()?.length === 0) {

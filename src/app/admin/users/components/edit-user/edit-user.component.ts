@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
 import { TableModule } from 'primeng/table';
@@ -14,6 +14,7 @@ import { MessageService } from 'primeng/api';
   imports: [
     CommonModule,
     ReactiveFormsModule,
+    FormsModule,
     TableModule,
     InputTextModule,
     SelectModule,
@@ -38,6 +39,27 @@ export class EditUserComponent implements OnInit {
     email: [''],
     status: ['']
   });
+
+  roles = [
+    { label: 'Administrador', value: 'admin' },
+    { label: 'Personal', value: 'user' },
+    { label: 'Cliente', value: 'client' }
+  ];
+
+  rol = this.user.roleName;
+
+  cambiarRol(role: string) {
+    this.userService.updateRole(this.user.id, role).subscribe({
+      next: () => {
+        this.user.roleName = role;
+        this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Rol actualizado correctamente' });
+      },
+      error: (err) => {
+        this.rol = this.user.roleName; // vuelve el select al rol real
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: err?.error?.message || 'Error al cambiar el rol' });
+      }
+    });
+  }
 
   ngOnInit(): void {
 

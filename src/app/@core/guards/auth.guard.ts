@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { CanActivate, ActivatedRouteSnapshot, RouterStateSnapshot, UrlTree, Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 import { MessageService } from 'primeng/api';
-import { puedeVerPanel } from '../auth/roles';
+import { puedeEscanear, puedeVerPanel } from '../auth/roles';
 
 @Injectable({
   providedIn: 'root'
@@ -33,6 +33,27 @@ export class AdminGuard implements CanActivate {
   canActivate(): boolean | UrlTree {
     if (puedeVerPanel(this.auth.getUser()?.role)) return true;
     this.messageService.add({severity:'warn', summary: 'Acceso restringido', detail: 'No tienes permisos para entrar al panel.'});
+    return this.router.createUrlTree(['/']);
+  }
+}
+
+/**
+ * Escáner de la puerta: personal y admin. Un cliente con sesión vuelve al inicio.
+ * Sin sesión pasa: /puerta muestra su propio login, así la app instalada no sale
+ * de su ámbito (scope /puerta) para iniciar sesión.
+ */
+@Injectable({
+  providedIn: 'root'
+})
+export class PuertaGuard implements CanActivate {
+  private auth = inject(AuthService);
+  private router = inject(Router);
+  private messageService = inject(MessageService);
+
+  canActivate(): boolean | UrlTree {
+    const role = this.auth.isAuthenticated() ? this.auth.getUser()?.role : null;
+    if (!role || puedeEscanear(role)) return true;
+    this.messageService.add({severity:'warn', summary: 'Acceso restringido', detail: 'El escáner de entradas es solo para el personal.'});
     return this.router.createUrlTree(['/']);
   }
 }

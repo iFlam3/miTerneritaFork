@@ -1,0 +1,281 @@
+@if (!personal()) {
+    <section class="ingreso">
+        <img src="assets/img/logo.png" alt="" class="tm-logo-img logo" width="132" height="110" />
+        <h1>Puerta</h1>
+        <p class="tm-muted">Escáner de entradas del personal de Mi Ternerita House</p>
+
+        <form class="tm-form" (submit)="ingresar($event)">
+            <div class="tm-field">
+                <label class="tm-label" for="p-email">Correo electrónico</label>
+                <input class="tm-input" id="p-email" name="email" type="email" required autocomplete="username" autocapitalize="none" spellcheck="false" />
+            </div>
+            <div class="tm-field">
+                <label class="tm-label" for="p-clave">Contraseña</label>
+                <div class="tm-input-wrap">
+                    <input class="tm-input" id="p-clave" name="password" [type]="verClave() ? 'text' : 'password'" required autocomplete="current-password" />
+                    <button type="button" class="tm-input-action" [attr.aria-label]="verClave() ? 'Ocultar contraseña' : 'Mostrar contraseña'" (click)="verClave.set(!verClave())">
+                        <i class="pi" [class.pi-eye]="!verClave()" [class.pi-eye-slash]="verClave()"></i>
+                    </button>
+                </div>
+            </div>
+            @if (errorIngreso()) {
+                <p class="tm-error" role="alert">{{ errorIngreso() }}</p>
+            }
+            <button class="tm-btn tm-btn--primary tm-btn--lg tm-btn--block" type="submit">Ingresar</button>
+        </form>
+    </section>
+} @else {
+    <div class="puerta">
+        <header class="barra">
+            <p class="hola"><small>Hola,</small> <strong>{{ nombre() }}</strong></p>
+            <div class="barra-acciones">
+                @if (instalable()) {
+                    <button type="button" class="tm-btn tm-btn--soft" (click)="instalar()"><i class="pi pi-download"></i> Instalar</button>
+                }
+                <button type="button" class="tm-icon-btn" [attr.aria-pressed]="sonido()" aria-label="Sonido al escanear" (click)="alternarSonido()">
+                    <i class="pi" [class.pi-volume-up]="sonido()" [class.pi-volume-off]="!sonido()"></i>
+                </button>
+                <button type="button" class="tm-btn tm-btn--danger" (click)="salir()"><i class="pi pi-sign-out"></i> Salir</button>
+            </div>
+        </header>
+
+        <div class="tm-field">
+            <label class="tm-label" for="p-evento">Evento a escanear</label>
+            @if (errorEventos()) {
+                <p class="aviso-linea">No se pudieron cargar los eventos. <button type="button" class="tm-link" (click)="cargarEventos()">Reintentar</button></p>
+            } @else if (!eventos()) {
+                <p class="tm-muted"><i class="pi pi-spin pi-spinner"></i> Cargando eventos…</p>
+            } @else if (eventos()!.length) {
+                <!-- [selected] por opción: un [value] en el select se aplica antes de que existan las opciones -->
+                <select #sel id="p-evento" class="tm-select" (change)="elegirEvento(+sel.value)">
+                    <option value="" disabled [selected]="!idEvento()">Selecciona el evento…</option>
+                    @for (e of eventos()!; track e.idEvents) {
+                        <option [value]="e.idEvents" [selected]="e.idEvents === idEvento()">{{ e.name }} · {{ fechaEvento(e.date) | date: 'EEE d/M' }} {{ hora(e.time) }}</option>
+                    }
+                </select>
+            } @else {
+                <p class="aviso-linea">No hay eventos activos hoy ni mañana.</p>
+            }
+        </div>
+
+        <div class="visor" [class.is-activa]="camara() === 'activa'" aria-live="polite">
+            <video #video playsinline muted aria-hidden="true"></video>
+            @if (!idEvento()) {
+                <p class="visor-msg"><i class="pi pi-calendar"></i> Selecciona el evento para activar la cámara</p>
+            } @else {
+                @switch (camara()) {
+                    @case ('activa') {
+                        <span class="marco" aria-hidden="true"></span>
+                        <p class="visor-pista">Apunta al código QR</p>
+                    }
+                    @case ('iniciando') {
+                        <p class="visor-msg"><i class="pi pi-spin pi-spinner"></i> Abriendo la cámara…</p>
+                    }
+                    @case ('permiso') {
+                        <div class="visor-msg">
+                            <i class="pi pi-ban"></i>
+                            <span>Sin permiso para usar la cámara. Permítelo en los ajustes del navegador o del teléfono y toca Reintentar. Mientras tanto, escribe el código abajo.</span>
+                            <button type="button" class="tm-btn tm-btn--soft" (click)="encenderCamara()">Reintentar</button>
+                        </div>
+                    }
+                    @case ('sin-camara') {
+                        <div class="visor-msg">
+                            <i class="pi pi-camera"></i>
+                            <span>No hay una cámara disponible. Escribe o pega el código de la entrada abajo.</span>
+                            <button type="button" class="tm-btn tm-btn--soft" (click)="encenderCamara()">Reintentar</button>
+                        </div>
+                    }
+                    @default {
+                        <div class="visor-msg">
+                            <i class="pi pi-camera"></i>
+                            <span>{{ camara() === 'error' ? 'No se pudo abrir la cámara.' : 'La cámara está apagada.' }}</span>
+                            <button type="button" class="tm-btn tm-btn--soft" (click)="encenderCamara()">Activar cámara</button>
+                        </div>
+                    }
+                }
+            }
+            @if (fase() === 'buscando') {
+                <p class="visor-msg visor-cargando" role="status"><i class="pi pi-spin pi-spinner"></i> Buscando la entrada…</p>
+            }
+        </div>
+
+        <form class="manual" (submit)="manual($event)">
+            <label class="tm-label" for="p-codigo">¿La cámara no lee? Escribe o pega el código</label>
+            <div class="manual-fila">
+                <input
+                    #codigo
+                    id="p-codigo"
+                    class="tm-input"
+                    name="codigo"
+                    required
+                    minlength="32"
+                    maxlength="128"
+                    autocomplete="off"
+                    autocapitalize="none"
+                    spellcheck="false"
+                    placeholder="Código de la entrada"
+                    [disabled]="!idEvento()"
+                />
+                <button type="submit" class="tm-btn tm-btn--primary" [disabled]="!idEvento() || fase() !== 'escaneando'">Buscar</button>
+            </div>
+        </form>
+
+        @if (idEvento()) {
+            <section class="historial" aria-labelledby="p-historial">
+                <div class="historial-head">
+                    <h2 id="p-historial">{{ esAdmin() ? 'Últimos escaneos del evento' : 'Mis últimos escaneos' }}</h2>
+                    <button type="button" class="tm-icon-btn" aria-label="Actualizar escaneos" (click)="cargarHistorial()"><i class="pi pi-refresh"></i></button>
+                </div>
+                @for (s of historial(); track s.idScan) {
+                    <article class="escaneo" [class.is-deshecho]="s.deshecho">
+                        <div>
+                            <strong>{{ s.total }} {{ s.total === 1 ? 'entrada' : 'entradas' }}</strong>
+                            <span class="tm-muted"> · {{ s.fecha | date: 'h:mm a' }}</span>
+                            <small>{{ resumen(s.entradas) }} · Pago #{{ s.idPayment }}{{ esAdmin() && s.usuario ? ' · ' + s.usuario.nombre : '' }}</small>
+                        </div>
+                        @if (s.deshecho) {
+                            <span class="tm-badge tm-badge--neutral">Deshecho</span>
+                        } @else if (s.origen !== 'manual') {
+                            <button type="button" class="tm-btn tm-btn--ghost" [disabled]="fase() !== 'escaneando'" (click)="deshacer(s.idScan)">Deshacer</button>
+                        }
+                    </article>
+                } @empty {
+                    <p class="tm-muted">Todavía no hay escaneos en este evento.</p>
+                }
+            </section>
+        }
+    </div>
+
+    @if (fase() === 'ficha' || fase() === 'pasando') {
+        @if (ficha(); as f) {
+            <div class="hoja" role="dialog" aria-modal="true" aria-labelledby="p-comprador">
+                <div class="hoja-cuerpo">
+                    @if (f.agotada) {
+                        <p class="banda" data-tono="aviso"><i class="pi pi-exclamation-triangle"></i> Todas las entradas ya fueron utilizadas</p>
+                    }
+                    <div class="ficha-head">
+                        <h2 id="p-comprador">{{ f.buyerName || 'Comprador sin nombre' }}</h2>
+                        <span class="chip" [class.is-agotada]="f.agotada">{{ f.restantes }}/{{ f.ticketCount }} por pasar</span>
+                    </div>
+                    <p class="tm-muted evento">{{ f.eventName }} · {{ fechaEvento(f.eventDate) | date: 'dd/MM/yyyy' }}</p>
+
+                    <div class="tarjeta">
+                        <h3>Cliente</h3>
+                        <dl>
+                            @if (f.buyerCedula) {
+                                <div><dt>Cédula</dt><dd>{{ f.buyerCedula }}</dd></div>
+                            }
+                            @if (f.buyerPhone) {
+                                <div><dt>Teléfono</dt><dd>{{ f.buyerPhone }}</dd></div>
+                            }
+                            @if (f.buyerEmail) {
+                                <div><dt>Correo</dt><dd>{{ f.buyerEmail }}</dd></div>
+                            }
+                        </dl>
+                    </div>
+
+                    <div class="tarjeta">
+                        <h3>Compra</h3>
+                        <dl>
+                            <div><dt>Pagado</dt><dd class="fuerte">${{ f.montoPagado | number: '1.2-2' }}</dd></div>
+                            @if (f.noDocumento) {
+                                <div><dt>Documento</dt><dd>{{ f.noDocumento }}</dd></div>
+                            }
+                            @if (f.asientos.length) {
+                                <div><dt>Puestos</dt><dd class="fuerte">{{ f.asientos.join(', ') }}</dd></div>
+                            }
+                            @for (t of f.entradas; track t.idTicket) {
+                                <div><dt>{{ t.tipo }}</dt><dd>{{ t.cantidad }} {{ t.cantidad === 1 ? 'entrada' : 'entradas' }}</dd></div>
+                            }
+                        </dl>
+                        <h4>Consumo</h4>
+                        @if (f.consumo.length) {
+                            <dl>
+                                @for (c of f.consumo; track $index) {
+                                    <div><dt>{{ c.cantidad }} × {{ c.nombre }}</dt><dd>${{ c.total | number: '1.2-2' }}</dd></div>
+                                }
+                            </dl>
+                        } @else {
+                            <p class="vacio">Sin consumo pre-ordenado</p>
+                        }
+                    </div>
+
+                    @if (f.agotada) {
+                        <h3 class="subtitulo">Historial de ingresos</h3>
+                        @for (s of f.historial; track s.idScan) {
+                            <div class="escaneo" [class.is-deshecho]="s.deshecho">
+                                <div>
+                                    <strong>{{ s.total }} {{ s.total === 1 ? 'entrada' : 'entradas' }}</strong>
+                                    <span class="tm-muted"> · {{ s.fecha | date: 'h:mm a' }} · {{ s.usuario?.nombre || 'Sistema' }}</span>
+                                    <small>{{ resumen(s.entradas) }}{{ s.deshecho ? ' · deshecho' : '' }}</small>
+                                </div>
+                            </div>
+                        } @empty {
+                            <p class="vacio">No hay detalles en el historial.</p>
+                        }
+                    } @else {
+                        <h3 class="subtitulo">¿Cuántas pasan ahora?</h3>
+                        @for (t of f.entradas; track t.idTicket) {
+                            <div class="tipo" [class.is-agotado]="t.restantes <= 0">
+                                <div>
+                                    <strong>{{ t.tipo }}</strong>
+                                    <small>Disponibles: <b>{{ t.restantes }}</b> de {{ t.cantidad }}</small>
+                                    @if (t.usadas) {
+                                        <small class="usadas">Ya ingresaron: {{ t.usadas }}</small>
+                                    }
+                                </div>
+                                <div class="tm-qty">
+                                    <button type="button" [attr.aria-label]="'Una menos de ' + t.tipo" [disabled]="!cantidad(t)" (click)="cambiar(t, -1)"><i class="pi pi-minus"></i></button>
+                                    <output [attr.aria-label]="t.tipo + ': pasan ' + cantidad(t)">{{ cantidad(t) }}</output>
+                                    <button type="button" [attr.aria-label]="'Una más de ' + t.tipo" [disabled]="cantidad(t) >= t.restantes" (click)="cambiar(t, 1)"><i class="pi pi-plus"></i></button>
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+
+                <div class="hoja-acciones">
+                    @if (errorFicha()) {
+                        <p class="tm-error" role="alert">{{ errorFicha() }}</p>
+                    }
+                    @if (f.agotada) {
+                        <button #accion type="button" class="tm-btn tm-btn--ghost grande" (click)="cerrar()">Cerrar</button>
+                    } @else {
+                        <button #accion type="button" class="tm-btn grande pasar" [disabled]="!total() || fase() === 'pasando'" (click)="dejarPasar()">
+                            @if (fase() === 'pasando') {
+                                <i class="pi pi-spin pi-spinner"></i> Registrando…
+                            } @else {
+                                <i class="pi pi-check"></i> Dejar pasar {{ total() }}
+                            }
+                        </button>
+                        <button type="button" class="tm-btn tm-btn--ghost" [disabled]="fase() === 'pasando'" (click)="cerrar()">Cancelar</button>
+                    }
+                </div>
+            </div>
+        }
+    }
+
+    @if (fase() === 'resultado') {
+        @if (resultado(); as r) {
+            <div class="resultado" [attr.data-tono]="r.tono" role="alertdialog" aria-modal="true" aria-labelledby="p-resultado">
+                <i
+                    class="pi"
+                    [class.pi-check-circle]="r.tono === 'ok'"
+                    [class.pi-exclamation-triangle]="r.tono === 'aviso'"
+                    [class.pi-times-circle]="r.tono === 'error'"
+                    aria-hidden="true"
+                ></i>
+                <h2 id="p-resultado">{{ r.titulo }}</h2>
+                @if (r.detalle) {
+                    <p>{{ r.detalle }}</p>
+                }
+                <div class="resultado-acciones">
+                    <button #accion type="button" class="tm-btn grande siguiente" (click)="cerrar()"><i class="pi pi-qrcode"></i> Escanear siguiente</button>
+                    @if (r.idScan) {
+                        <button type="button" class="tm-btn deshacer" (click)="deshacer(r.idScan)">Deshacer</button>
+                    }
+                </div>
+            </div>
+        }
+    }
+}

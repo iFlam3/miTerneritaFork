@@ -9,3 +9,4 @@ Disallow: /forgotPassword
 Disallow: /home/profile
 Disallow: /home/event/*/ticket
 Disallow: /concierto
+Disallow: /puerta

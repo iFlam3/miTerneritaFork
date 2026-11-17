@@ -1,0 +1,482 @@
+// Escáner de la puerta: una mano, objetivos de 48px o más y colores de estado claros.
+:host {
+  display: block;
+  flex: 1;
+
+  --pad: max(16px, env(safe-area-inset-left));
+  --pad-top: max(14px, env(safe-area-inset-top));
+  --pad-bottom: max(16px, env(safe-area-inset-bottom));
+}
+
+.tm-btn {
+  --btn-h: 48px;
+}
+
+.tm-icon-btn {
+  width: 48px;
+  height: 48px;
+  flex: none;
+}
+
+.tm-input-action {
+  right: 1px;
+  width: 48px;
+  height: 48px;
+}
+
+// ---------- Ingreso ----------
+.ingreso {
+  display: grid;
+  gap: 0.75rem;
+  width: min(100%, 420px);
+  margin: 0 auto;
+  padding: var(--pad-top) var(--pad) var(--pad-bottom);
+  text-align: center;
+
+  .logo {
+    width: 132px;
+    height: auto;
+    margin: 4vh auto 0;
+  }
+
+  h1 {
+    margin: 0;
+    font-size: 2rem;
+  }
+
+  p {
+    margin: 0 0 1rem;
+  }
+
+  form {
+    text-align: left;
+  }
+}
+
+// ---------- Escáner ----------
+.puerta {
+  display: grid;
+  gap: 1rem;
+  width: min(100%, 560px);
+  margin: 0 auto;
+  padding: var(--pad-top) var(--pad) var(--pad-bottom);
+}
+
+.barra {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.hola {
+  display: grid;
+  min-width: 0;
+  margin: 0;
+  line-height: 1.2;
+
+  small {
+    color: var(--text-muted);
+  }
+
+  strong {
+    overflow: hidden;
+    font-size: 1.2rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.barra-acciones {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.tm-select {
+  height: 56px;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.aviso-linea {
+  margin: 0;
+  padding: 0.85rem 1rem;
+  border-radius: var(--radius-sm);
+  background: var(--warning-soft);
+  color: var(--text);
+}
+
+.visor {
+  position: relative;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  width: 100%;
+  aspect-ratio: 1;
+  max-height: 56vh;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+
+  &.is-activa {
+    border-style: solid;
+    background: #000;
+  }
+
+  video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+  }
+
+  &.is-activa video {
+    opacity: 1;
+  }
+}
+
+.marco {
+  position: absolute;
+  inset: 17%;
+  border: 3px solid rgba(255, 255, 255, 0.9);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0.35);
+}
+
+.visor-pista {
+  position: absolute;
+  bottom: 0.75rem;
+  margin: 0;
+  padding: 0.35rem 0.9rem;
+  border-radius: var(--radius-pill);
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  font-weight: 700;
+}
+
+.visor-msg {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 0.75rem;
+  max-width: 34ch;
+  margin: 0;
+  padding: 1.25rem;
+  color: var(--text-muted);
+  text-align: center;
+
+  .pi {
+    font-size: 1.75rem;
+  }
+}
+
+.visor-cargando {
+  position: absolute;
+  inset: 0;
+  max-width: none;
+  place-content: center;
+  background: var(--scrim);
+  color: #fff;
+  font-weight: 700;
+}
+
+.manual-fila {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.45rem;
+
+  .tm-btn {
+    --btn-h: 50px;
+  }
+}
+
+// ---------- Historial ----------
+.historial {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.historial-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  h2 {
+    margin: 0;
+    font-size: 1.1rem;
+  }
+}
+
+.escaneo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+
+  small {
+    display: block;
+    color: var(--text-muted);
+  }
+
+  &.is-deshecho strong {
+    text-decoration: line-through;
+    color: var(--text-muted);
+  }
+}
+
+// ---------- Ficha del comprador ----------
+.hoja {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-overlay);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: var(--bg);
+}
+
+.hoja-cuerpo,
+.hoja-acciones {
+  width: min(100%, 560px);
+  margin: 0 auto;
+  padding-inline: var(--pad);
+}
+
+.hoja-cuerpo {
+  flex: 1;
+  padding-top: var(--pad-top);
+  padding-bottom: 1rem;
+
+  h3 {
+    margin: 0 0 0.5rem;
+  }
+}
+
+.hoja-acciones {
+  position: sticky;
+  bottom: 0;
+  display: grid;
+  gap: 0.6rem;
+  padding-top: 0.75rem;
+  padding-bottom: var(--pad-bottom);
+  border-top: 1px solid var(--border);
+  background: var(--bg);
+
+  .tm-error {
+    margin: 0;
+    font-size: 0.9rem;
+  }
+}
+
+.banda {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 0 0 1rem;
+  padding: 0.9rem 1rem;
+  border-radius: var(--radius-md);
+  background: var(--warning-soft);
+  color: var(--warning);
+  font-weight: 700;
+}
+
+.ficha-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+
+  h2 {
+    margin: 0;
+    font-size: 1.5rem;
+  }
+}
+
+.chip {
+  flex: none;
+  padding: 0.35rem 0.8rem;
+  border-radius: var(--radius-pill);
+  background: var(--success-soft);
+  color: var(--success);
+  font-weight: 700;
+  white-space: nowrap;
+
+  &.is-agotada {
+    background: var(--danger-soft);
+    color: var(--danger);
+  }
+}
+
+.evento {
+  margin: 0.25rem 0 1rem;
+}
+
+.tarjeta {
+  margin-bottom: 0.75rem;
+  padding: 0.9rem 1rem;
+  border-radius: var(--radius-md);
+  background: var(--surface-2);
+
+  h3,
+  h4 {
+    margin: 0 0 0.35rem;
+    color: var(--text-subtle);
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  h4 {
+    margin-top: 0.75rem;
+  }
+
+  dl {
+    margin: 0;
+  }
+
+  dl > div {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.2rem 0;
+  }
+
+  dt {
+    color: var(--text-muted);
+  }
+
+  dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+    text-align: right;
+  }
+}
+
+.fuerte {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.vacio {
+  margin: 0;
+  color: var(--text-subtle);
+  font-style: italic;
+}
+
+.hoja-cuerpo .subtitulo {
+  margin: 1.25rem 0 0.6rem;
+  font-size: 1.15rem;
+}
+
+.tipo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.6rem;
+  padding: 0.8rem 0.9rem;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+
+  strong {
+    font-size: 1.1rem;
+  }
+
+  small {
+    display: block;
+    color: var(--text-muted);
+  }
+
+  .usadas {
+    color: var(--danger);
+  }
+
+  &.is-agotado {
+    opacity: 0.55;
+  }
+
+  .tm-qty button {
+    width: 48px;
+    height: 48px;
+  }
+
+  .tm-qty output {
+    min-width: 2.5ch;
+    font-size: 1.3rem;
+  }
+}
+
+.grande {
+  --btn-h: 58px;
+  font-size: 1.2rem;
+}
+
+.pasar {
+  background: var(--success);
+  color: var(--bg);
+}
+
+// ---------- Resultado (pantalla completa, verde / ámbar / rojo) ----------
+.resultado {
+  --tono: var(--success);
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-overlay);
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 0.5rem;
+  padding: var(--pad-top) var(--pad) var(--pad-bottom);
+  background: var(--tono);
+  color: var(--bg);
+  text-align: center;
+
+  &[data-tono='aviso'] {
+    --tono: var(--warning);
+  }
+
+  &[data-tono='error'] {
+    --tono: var(--danger);
+  }
+
+  > .pi {
+    font-size: 5rem;
+  }
+
+  h2 {
+    max-width: 22ch;
+    margin: 0.5rem 0 0;
+    font-size: clamp(1.6rem, 7vw, 2.2rem);
+  }
+
+  p {
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 700;
+  }
+}
+
+.resultado-acciones {
+  display: grid;
+  gap: 0.75rem;
+  width: min(80vw, 360px);
+  margin-top: 1.5rem;
+
+  .siguiente {
+    background: var(--bg);
+    color: var(--text);
+  }
+
+  .deshacer {
+    border: 2px solid currentColor;
+    color: inherit;
+  }
+}

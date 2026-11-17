@@ -54,8 +54,8 @@
                         </p>
 
                         <div class="slide-cta">
-                            <button type="button" class="tm-btn tm-btn--primary tm-btn--lg" [class.is-soldout]="agotado(ev.idEvents)" [disabled]="agotado(ev.idEvents)" (click)="buy(ev.idEvents)">
-                                <i class="pi pi-ticket"></i> {{ agotado(ev.idEvents) ? 'SOLD OUT' : 'Comprar entradas' }}
+                            <button type="button" class="tm-btn tm-btn--primary tm-btn--lg" [class.is-soldout]="agotado(ev.idEvents)" [disabled]="agotado(ev.idEvents) || sinEntradas(ev)" (click)="buy(ev.idEvents)">
+                                <i class="pi pi-ticket"></i> {{ agotado(ev.idEvents) ? 'SOLD OUT' : sinEntradas(ev) ? 'Muy pronto' : 'Comprar entradas' }}
                             </button>
                             <!-- Enlace real (no botón): así Google descubre la ficha del evento -->
                             <a class="tm-btn tm-btn--glass tm-btn--lg" [routerLink]="['/home/event', ev.idEvents]">
@@ -241,8 +241,8 @@
                                             }
                                         </div>
                                         <div class="panel-actions">
-                                            <button type="button" class="tm-btn tm-btn--primary" [class.is-soldout]="agotado(ev.idEvents)" [disabled]="agotado(ev.idEvents)" (click)="buy(ev.idEvents)">
-                                                <i class="pi pi-ticket"></i> {{ agotado(ev.idEvents) ? 'SOLD OUT' : 'Comprar' }}
+                                            <button type="button" class="tm-btn tm-btn--primary" [class.is-soldout]="agotado(ev.idEvents)" [disabled]="agotado(ev.idEvents) || sinEntradas(ev)" (click)="buy(ev.idEvents)">
+                                                <i class="pi pi-ticket"></i> {{ agotado(ev.idEvents) ? 'SOLD OUT' : sinEntradas(ev) ? 'Muy pronto' : 'Comprar' }}
                                             </button>
                                             <a class="tm-btn tm-btn--glass" [routerLink]="['/home/event', ev.idEvents]">
                                                 Detalles
@@ -336,7 +336,7 @@
                                 } @else {
                                     <span>{{ ev.room }}</span>
                                 }
-                                <button type="button" class="tm-btn tm-btn--primary tm-btn--sm" [class.is-soldout]="agotado(ev.idEvents)" [disabled]="agotado(ev.idEvents)" (click)="buy(ev.idEvents)">{{ agotado(ev.idEvents) ? 'SOLD OUT' : 'Entradas' }}</button>
+                                <button type="button" class="tm-btn tm-btn--primary tm-btn--sm" [class.is-soldout]="agotado(ev.idEvents)" [disabled]="agotado(ev.idEvents) || sinEntradas(ev)" (click)="buy(ev.idEvents)">{{ agotado(ev.idEvents) ? 'SOLD OUT' : sinEntradas(ev) ? 'Muy pronto' : 'Entradas' }}</button>
                             </div>
                         </div>
                         <a class="card-link" [routerLink]="['/home/event', ev.idEvents]" [attr.aria-label]="'Ver ' + ev.name"></a>

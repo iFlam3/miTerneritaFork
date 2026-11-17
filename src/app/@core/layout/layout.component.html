@@ -51,6 +51,9 @@
                                 <span>{{ u.email }}</span>
                             </div>
                             <a routerLink="/home/profile" role="menuitem"><i class="pi pi-user"></i> Mi perfil</a>
+                            @if (canScan()) {
+                                <a routerLink="/puerta" role="menuitem"><i class="pi pi-qrcode"></i> Escanear entradas</a>
+                            }
                             @if (isStaff()) {
                                 <a routerLink="/admin/dashboard" role="menuitem"><i class="pi pi-chart-bar"></i> Panel de control</a>
                             }
@@ -101,6 +104,9 @@
     <div class="drawer-foot">
         @if (user(); as u) {
             <a routerLink="/home/profile" class="tm-btn tm-btn--ghost tm-btn--block"><i class="pi pi-user"></i> Mi perfil</a>
+            @if (canScan()) {
+                <a routerLink="/puerta" class="tm-btn tm-btn--ghost tm-btn--block"><i class="pi pi-qrcode"></i> Escanear entradas</a>
+            }
             @if (isStaff()) {
                 <a routerLink="/admin/dashboard" class="tm-btn tm-btn--ghost tm-btn--block"><i class="pi pi-chart-bar"></i> Panel de control</a>
             }

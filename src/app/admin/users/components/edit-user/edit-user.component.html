@@ -24,6 +24,13 @@
             <label for="eu-email">Correo electrónico</label>
             <input pInputText id="eu-email" type="email" formControlName="email" />
         </div>
+
+        <div class="adm-field adm-full">
+            <label for="eu-role">Rol</label>
+            <p-select inputId="eu-role" ariaLabel="Rol del usuario" [options]="roles" optionLabel="label" optionValue="value"
+                [(ngModel)]="rol" [ngModelOptions]="{ standalone: true }" (onChange)="cambiarRol($event.value)" appendTo="body" />
+            <p class="adm-hint">El cambio de rol se aplica al instante.</p>
+        </div>
     </div>
 
     <div class="adm-actions">

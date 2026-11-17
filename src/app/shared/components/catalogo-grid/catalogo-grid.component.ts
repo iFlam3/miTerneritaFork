@@ -58,7 +58,13 @@ function leerColumnas(): number {
         }
       </div>
       <input class="search" type="search" placeholder="Buscar" [ngModel]="busqueda()" (ngModelChange)="buscar($event)" aria-label="Buscar producto" />
-      <p-selectButton [options]="opcionesColumnas" [ngModel]="columnas()" (ngModelChange)="elegirColumnas($event)" optionLabel="label" optionValue="value" [allowEmpty]="false" size="small" aria-label="Columnas" />
+      <p-selectButton [options]="opcionesColumnas" [ngModel]="columnas()" (ngModelChange)="elegirColumnas($event)" optionLabel="label" optionValue="value" [allowEmpty]="false" size="small" aria-label="Columnas">
+        <ng-template #item let-option>
+          <span class="cols-ico" [attr.title]="option.value + ' columnas'" [attr.aria-label]="option.value + ' columnas'" role="img">
+            @for (c of option.cubos; track c) {<i></i>}
+          </span>
+        </ng-template>
+      </p-selectButton>
     </div>
 
     @if (pagina().length) {
@@ -117,6 +123,7 @@ function leerColumnas(): number {
     }
   `,
   styles: `
+    .cols-ico{display:inline-flex;gap:2px;align-items:center;min-width:36px;min-height:20px;justify-content:center}.cols-ico i{width:7px;height:7px;border-radius:1.5px;background:currentColor}
     :host {
       display: grid;
       gap: 16px;
@@ -395,9 +402,9 @@ export class CatalogoGridComponent<T> {
   filas = signal(20);
 
   readonly opcionesColumnas = [
-    { label: '3', value: 3 },
-    { label: '4', value: 4 },
-    { label: '5', value: 5 }
+    { label: '3', value: 3, cubos: [1, 2, 3] },
+    { label: '4', value: 4, cubos: [1, 2, 3, 4] },
+    { label: '5', value: 5, cubos: [1, 2, 3, 4, 5] }
   ];
   /** 3, 4 o 5 columnas; se recuerda por dispositivo. */
   columnas = signal(leerColumnas());

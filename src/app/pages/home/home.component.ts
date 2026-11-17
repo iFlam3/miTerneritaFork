@@ -61,6 +61,11 @@ export class HomeComponent implements OnInit {
   private readonly agotados = toSignal(this.eventService.agotados().pipe(catchError(() => of([] as number[]))), {
     initialValue: [] as number[]
   });
+  /** Sin entradas a la venta (aun): el boton dice "Muy pronto" y no compra. */
+  sinEntradas(ev: { minPrice: number | null }) {
+    return this.preciosCargados() && ev.minPrice === null;
+  }
+
   agotado(id: number) {
     return this.agotados().includes(id);
   }
@@ -69,6 +74,7 @@ export class HomeComponent implements OnInit {
 
   private raw = signal<Event[]>([]);
   private prices = signal<Map<number, number>>(new Map());
+  private preciosCargados = signal(false);
   loading = signal(true);
 
   // ---------- Listas derivadas ----------
@@ -148,6 +154,7 @@ export class HomeComponent implements OnInit {
         map.set(t.idEvents, Math.min(map.get(t.idEvents) ?? Infinity, price));
       }
       this.prices.set(map);
+      this.preciosCargados.set(true);
     });
   }
 

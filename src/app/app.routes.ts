@@ -1,7 +1,7 @@
 import { Routes } from '@angular/router';
 import { LayoutComponent } from './@core/layout/layout.component';
 import { AdminLayoutComponent } from './@core/admin-layout/admin-layout.component';
-import { AdminGuard, AuthGuard } from './@core/guards/auth.guard';
+import { AdminGuard, AuthGuard, PuertaGuard } from './@core/guards/auth.guard';
 
 export const routes: Routes = [
     {
@@ -53,23 +53,26 @@ export const routes: Routes = [
                 title: 'Trabaja con nosotros',
                 data: { description: 'Únete al equipo de Mi Ternerita House. Mira los puestos abiertos y envía tu postulación.' }
             },
+            // Entradas y mapa: públicos (ver precios y puestos); la sesión se pide al continuar.
+            {
+                path: 'home/event/:id/ticket',
+                loadComponent: () => import('./pages/ticket/ticket.component').then(m => m.TicketComponent),
+                title: 'Elige tus entradas',
+                data: { noindex: true }
+            },
+            {
+                // Próximo concierto: la misma página de entradas, con el mapa del salón
+                path: 'concierto',
+                loadComponent: () => import('./pages/ticket/ticket.component').then(m => m.TicketComponent),
+                title: 'Concierto',
+                data: { noindex: true }
+            },
             {
                 // Flujo de compra y perfil: requieren sesión
                 path: '',
                 canActivate: [AuthGuard],
                 data: { noindex: true },
                 children: [
-                    {
-                        path: 'home/event/:id/ticket',
-                        loadComponent: () => import('./pages/ticket/ticket.component').then(m => m.TicketComponent),
-                        title: 'Elige tus entradas'
-                    },
-                    {
-                        // Próximo concierto: la misma página de entradas, con el mapa del salón
-                        path: 'concierto',
-                        loadComponent: () => import('./pages/ticket/ticket.component').then(m => m.TicketComponent),
-                        title: 'Concierto'
-                    },
                     {
                         path: 'home/event/:id/ticket/consume',
                         loadComponent: () => import('./pages/consume/consume.component').then(m => m.ConsumeComponent),
@@ -93,6 +96,14 @@ export const routes: Routes = [
                 ]
             }
         ]
+    },
+    {
+        // Escáner de entradas (PWA de la puerta): a pantalla completa, fuera de los layouts.
+        path: 'puerta',
+        canActivate: [PuertaGuard],
+        loadComponent: () => import('./pages/puerta/puerta.component').then(m => m.PuertaComponent),
+        title: 'Puerta',
+        data: { noindex: true }
     },
     {
         path: 'admin',
@@ -163,5 +174,16 @@ export const routes: Routes = [
             },
         ]
     },
-    { path: '**', redirectTo: '' }
+    {
+        path: '**',
+        component: LayoutComponent,
+        children: [
+            {
+                path: '',
+                loadComponent: () => import('./pages/not-found/not-found.component').then(m => m.NotFoundComponent),
+                title: 'Página no encontrada',
+                data: { noindex: true }
+            }
+        ]
+    }
 ];

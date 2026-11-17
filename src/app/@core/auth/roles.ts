@@ -6,3 +6,8 @@
 export const ROLES_PANEL = ['admin'];
 
 export const puedeVerPanel = (role?: string | null): boolean => !!role && ROLES_PANEL.includes(role);
+
+/** Escáner de entradas de la puerta (/puerta): personal y admin. */
+export const ROLES_PUERTA = ['admin', 'user'];
+
+export const puedeEscanear = (role?: string | null): boolean => !!role && ROLES_PUERTA.includes(role);

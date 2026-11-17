@@ -49,6 +49,9 @@ export class EventComponent implements OnInit {
 
   event = signal<Event | null>(null);
   tickets = signal<Ticket[]>([]);
+  private ticketsCargados = signal(false);
+  /** Evento sin entradas a la venta (aun): no se puede comprar. */
+  sinEntradas = computed(() => this.ticketsCargados() && this.minPrice() === null);
   /** Galería "revive tu noche" (la sube el admin después del evento). */
   fotos = signal<EventPhoto[]>([]);
   loading = signal(true);
@@ -165,7 +168,10 @@ export class EventComponent implements OnInit {
     this.ticketsService
       .getTicktesByEvent(id)
       .pipe(catchError(() => of([] as Ticket[])))
-      .subscribe(tickets => this.tickets.set((tickets ?? []).filter(t => t.status === 1)));
+      .subscribe(tickets => {
+        this.tickets.set((tickets ?? []).filter(t => t.status === 1));
+        this.ticketsCargados.set(true);
+      });
   }
 
   price(t: Ticket) {

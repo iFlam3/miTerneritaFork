@@ -50,7 +50,10 @@ export class AdminLayoutComponent implements OnInit {
   readonly groups: RouteGroup[] = [
     {
       label: 'General',
-      items: [{ name: 'Dashboard', icon: 'pi pi-chart-bar', routerLink: '/admin/dashboard' }]
+      items: [
+        { name: 'Dashboard', icon: 'pi pi-chart-bar', routerLink: '/admin/dashboard' },
+        { name: 'Escanear entradas', icon: 'pi pi-qrcode', routerLink: '/puerta' }
+      ]
     },
     {
       label: 'Ventas',

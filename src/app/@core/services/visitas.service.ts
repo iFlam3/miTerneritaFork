@@ -40,16 +40,16 @@ export interface ResumenVisitas {
 }
 
 /** UUID v4; `randomUUID` solo existe en https o localhost. */
-const uuid = (): string =>
+export const uuid = (): string =>
   crypto.randomUUID?.() ??
   '10000000-1000-4000-8000-100000000000'.replace(/[018]/g, c =>
     (Number(c) ^ (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (Number(c) / 4)))).toString(16)
   );
 
-/** Página del sitio público → paso de la compra. `null` = no se cuenta (panel). */
+/** Página del sitio público → paso de la compra. `null` = no se cuenta (panel y escáner de la puerta). */
 export function pasoDe(url: string): { paso: string; idEvents?: number } | null {
   const ruta = url.split(/[?#]/)[0];
-  if (ruta.startsWith('/admin')) return null;
+  if (ruta.startsWith('/admin') || ruta.startsWith('/puerta')) return null;
   if (ruta === '/' || ruta === '') return { paso: 'inicio' };
   if (ruta === '/concierto') return { paso: 'entradas' };
   const m = /^\/home\/event\/(\d+)(\/ticket(\/consume|\/checkout(\/payment)?)?)?\/?$/.exec(ruta);
