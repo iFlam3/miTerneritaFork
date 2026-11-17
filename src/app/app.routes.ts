@@ -133,6 +133,11 @@ export const routes: Routes = [
                 title: 'Mapa de mesas'
             },
             {
+                path: 'escaneos',
+                loadComponent: () => import('./admin/escaneos/escaneos.component').then(m => m.EscaneosComponent),
+                title: 'Historial de entradas'
+            },
+            {
                 path: 'reportes',
                 loadComponent: () => import('./admin/reportes/reportes.component').then(m => m.ReportesComponent),
                 title: 'Reportes'

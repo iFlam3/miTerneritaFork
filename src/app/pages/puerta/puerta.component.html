@@ -123,15 +123,22 @@
         @if (idEvento()) {
             <section class="historial" aria-labelledby="p-historial">
                 <div class="historial-head">
-                    <h2 id="p-historial">{{ esAdmin() ? 'Últimos escaneos del evento' : 'Mis últimos escaneos' }}</h2>
-                    <button type="button" class="tm-icon-btn" aria-label="Actualizar escaneos" (click)="cargarHistorial()"><i class="pi pi-refresh"></i></button>
+                    <h2 id="p-historial">{{ esAdmin() ? 'Historial del evento' : 'Mi historial' }}</h2>
+                    <button type="button" class="tm-icon-btn" aria-label="Actualizar historial" (click)="cargarHistorial()"><i class="pi pi-refresh"></i></button>
                 </div>
+                @if (historial().length) {
+                    <p class="historial-total">
+                        <strong>{{ totalHistorial().personas }}</strong> {{ totalHistorial().personas === 1 ? 'persona pasó' : 'personas pasaron' }} ·
+                        <strong>${{ totalHistorial().monto | number: '1.2-2' }}</strong>
+                        <small>(últimos {{ historial().length }} escaneos)</small>
+                    </p>
+                }
                 @for (s of historial(); track s.idScan) {
                     <article class="escaneo" [class.is-deshecho]="s.deshecho">
                         <div>
-                            <strong>{{ s.total }} {{ s.total === 1 ? 'entrada' : 'entradas' }}</strong>
-                            <span class="tm-muted"> · {{ s.fecha | date: 'h:mm a' }}</span>
-                            <small>{{ resumen(s.entradas) }} · Pago #{{ s.idPayment }}{{ esAdmin() && s.usuario ? ' · ' + s.usuario.nombre : '' }}</small>
+                            <strong>{{ s.cliente?.nombre || 'Pago #' + s.idPayment }}</strong>
+                            <span class="tm-muted"> · {{ s.total }} {{ s.total === 1 ? 'entrada' : 'entradas' }} · ${{ (s.monto ?? 0) | number: '1.2-2' }}</span>
+                            <small>{{ s.fecha | date: "d MMM, h:mm a" }} · {{ resumen(s.entradas) }}{{ s.cliente?.cedula ? ' · ' + s.cliente?.cedula : '' }}{{ esAdmin() && s.usuario ? ' · escaneó ' + s.usuario.nombre : '' }}</small>
                         </div>
                         @if (s.deshecho) {
                             <span class="tm-badge tm-badge--neutral">Deshecho</span>

@@ -28,6 +28,8 @@ interface Escaneo {
   usuario: { nombre: string } | null;
   deshecho: boolean;
   entradas: Linea[];
+  cliente?: { nombre: string; cedula: string | null } | null;
+  monto?: number;
 }
 interface Ficha {
   noDocumento: string | null;
@@ -163,6 +165,12 @@ export class PuertaComponent implements OnDestroy {
   readonly errorFicha = signal('');
   readonly resultado = signal<Resultado | null>(null);
   readonly historial = signal<Escaneo[]>([]);
+  /** Lo que paso de verdad (sin los deshechos) en los escaneos cargados. */
+  readonly totalHistorial = computed(() =>
+    this.historial()
+      .filter(s => !s.deshecho)
+      .reduce((t, s) => ({ personas: t.personas + s.total, monto: t.monto + (s.monto ?? 0) }), { personas: 0, monto: 0 })
+  );
   readonly sonido = signal(leerLS(SONIDO_KEY) !== '0');
   readonly instalable = signal<{ prompt(): Promise<unknown> } | null>(null);
 
@@ -403,7 +411,7 @@ export class PuertaComponent implements OnDestroy {
   cargarHistorial() {
     const idEvents = this.idEvento();
     if (!idEvents) return;
-    this.http.get<Escaneo[]>(`${this.api}/code/scans`, { params: { idEvents, limit: 20 } }).subscribe({
+    this.http.get<Escaneo[]>(`${this.api}/code/scans`, { params: { idEvents, limit: 50 } }).subscribe({
       next: h => {
         if (idEvents === this.idEvento()) this.historial.set(h);
       },
