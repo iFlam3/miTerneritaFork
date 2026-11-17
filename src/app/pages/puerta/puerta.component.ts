@@ -329,9 +329,37 @@ export class PuertaComponent implements OnDestroy {
 
   // ---------- Escaneo ----------
 
+  /** Coincidencias de la busqueda manual (varias compras con la misma cedula). */
+  readonly resultados = signal<{ token: string; nombre: string; cedula: string | null; noDocumento: string | null }[]>([]);
+  readonly errorManual = signal('');
+
+  /** Sin camara: cedula del comprador o numero de compra (o un token pegado). */
   manual(e: SubmitEvent) {
     e.preventDefault();
-    this.buscar(this.codigo()?.nativeElement.value ?? '');
+    const q = (this.codigo()?.nativeElement.value ?? '').trim();
+    const idEvents = this.idEvento();
+    this.resultados.set([]);
+    this.errorManual.set('');
+    if (!q || !idEvents || this.fase() !== 'escaneando') return;
+    if (q.length >= 32) {
+      this.buscar(q);
+      return;
+    }
+    this.http.post<ReturnType<typeof this.resultados>>(`${this.api}/code/buscar`, { q, idEvents }).subscribe({
+      next: lista => {
+        if (lista.length === 1) this.elegir(lista[0].token);
+        else if (lista.length) this.resultados.set(lista);
+        else this.errorManual.set('No hay entradas aprobadas con esa cédula o número de compra en este evento.');
+      },
+      error: () => this.errorManual.set('No se pudo buscar. Revisa la conexión e intenta de nuevo.')
+    });
+  }
+
+  elegir(token: string) {
+    this.resultados.set([]);
+    const input = this.codigo()?.nativeElement;
+    if (input) input.value = '';
+    this.buscar(token);
   }
 
   buscar(texto: string) {

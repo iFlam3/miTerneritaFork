@@ -100,7 +100,7 @@
         </div>
 
         <form class="manual" (submit)="manual($event)">
-            <label class="tm-label" for="p-codigo">¿La cámara no lee? Escribe o pega el código</label>
+            <label class="tm-label" for="p-codigo">¿La cámara no lee? Busca por cédula o número de compra</label>
             <div class="manual-fila">
                 <input
                     #codigo
@@ -108,16 +108,31 @@
                     class="tm-input"
                     name="codigo"
                     required
-                    minlength="32"
                     maxlength="128"
+                    inputmode="text"
                     autocomplete="off"
                     autocapitalize="none"
                     spellcheck="false"
-                    placeholder="Código de la entrada"
+                    placeholder="Ej. 12345678 o 0000032"
                     [disabled]="!idEvento()"
                 />
                 <button type="submit" class="tm-btn tm-btn--primary" [disabled]="!idEvento() || fase() !== 'escaneando'">Buscar</button>
             </div>
+            @if (errorManual()) {
+                <p class="manual-error" role="alert">{{ errorManual() }}</p>
+            }
+            @if (resultados().length) {
+                <ul class="resultados" aria-label="Compras encontradas">
+                    @for (r of resultados(); track r.token) {
+                        <li>
+                            <button type="button" class="resultado" (click)="elegir(r.token)">
+                                <strong>{{ r.nombre }}</strong>
+                                <small>{{ r.cedula }} · Compra {{ r.noDocumento }}</small>
+                            </button>
+                        </li>
+                    }
+                </ul>
+            }
         </form>
 
         @if (idEvento()) {
