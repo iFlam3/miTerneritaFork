@@ -8,7 +8,9 @@ import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { InputText } from 'primeng/inputtext';
 import { TableModule } from 'primeng/table';
 import { PaymentService } from '../../@core/services/payment.service';
-import { combineLatest, map, Observable, startWith, switchMap } from 'rxjs';
+import { combineLatest, forkJoin, map, Observable, startWith, switchMap } from 'rxjs';
+import { MessageService } from 'primeng/api';
+import { ConfirmDeleteModalComponent } from '../../shared/components/confirm-delete-modal/confirm-delete-modal.component';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { UpdatePaymentComponent } from './components/update-payment/update-payment.component';
 import { Payment } from '../../@core/models/payment.model';
@@ -41,7 +43,34 @@ const diaLocal = (fecha: string | Date) => {
 export class PaymentsComponent implements OnInit{
   private paymentsService = inject(PaymentService);
   private dialogService = inject(DialogService);
+  private messageService = inject(MessageService);
   ref: DynamicDialogRef | undefined;
+  seleccion: any[] = [];
+
+  /** Borrado logico (isDeleted) y libera sus asientos; uno o varios a la vez. */
+  eliminar(pagos: any[]) {
+    const ref = this.dialogService.open(ConfirmDeleteModalComponent, {
+      header: 'Eliminar pagos',
+      width: '420px',
+      modal: true,
+      breakpoints: { '640px': '94vw' },
+      data: { message: pagos.length === 1 ? '¿Eliminar este pago? Sus entradas dejarán de ser válidas.' : `¿Eliminar ${pagos.length} pagos? Sus entradas dejarán de ser válidas.` }
+    });
+    ref?.onClose.subscribe((ok: boolean) => {
+      if (!ok) return;
+      forkJoin(pagos.map(p => this.paymentsService.deletePayment(p.idPayment))).subscribe({
+        next: () => {
+          this.seleccion = [];
+          this.paymentsService.refresh();
+          this.messageService.add({ severity: 'success', summary: pagos.length === 1 ? 'Pago eliminado' : `${pagos.length} pagos eliminados` });
+        },
+        error: err => {
+          this.paymentsService.refresh();
+          this.messageService.add({ severity: 'error', summary: 'No se eliminó', detail: err?.error?.message });
+        }
+      });
+    });
+  }
   payments$!: Observable<any[]>;
   isModalOpen = false;
   isLoading = signal(false);

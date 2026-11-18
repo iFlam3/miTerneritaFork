@@ -103,23 +103,32 @@ export class PostulacionesComponent implements OnInit {
     });
   }
 
+  seleccion: Postulacion[] = [];
+
   eliminar(p: Postulacion) {
+    this.eliminarVarias([p], `¿Eliminar la postulación de ${p.nombre} ${p.apellido}? No se puede deshacer.`);
+  }
+
+  eliminarVarias(ps: Postulacion[], mensaje = `¿Eliminar ${ps.length} postulaciones? No se puede deshacer.`) {
     const ref = this.dialogService.open(ConfirmDeleteModalComponent, {
       header: 'Eliminar postulación',
       width: '420px',
       modal: true,
-      data: { message: `¿Eliminar la postulación de ${p.nombre} ${p.apellido}? No se puede deshacer.` },
+      data: { message: mensaje },
       breakpoints: { '640px': '94vw' }
     });
     ref?.onClose.subscribe((confirmado: boolean) => {
       if (!confirmado) return;
-      this.service.eliminar(p.idPostulacion).subscribe({
-        next: () => {
-          this.lista.update(l => l.filter(x => x.idPostulacion !== p.idPostulacion));
-          this.messageService.add({ severity: 'success', summary: 'Postulación eliminada' });
-        },
-        error: () => this.messageService.add({ severity: 'error', summary: 'No se pudo eliminar' })
-      });
+      for (const p of ps) {
+        this.service.eliminar(p.idPostulacion).subscribe({
+          next: () => {
+            this.lista.update(l => l.filter(x => x.idPostulacion !== p.idPostulacion));
+            this.seleccion = this.seleccion.filter(x => x.idPostulacion !== p.idPostulacion);
+            this.messageService.add({ severity: 'success', summary: 'Postulación eliminada', detail: `${p.nombre} ${p.apellido}` });
+          },
+          error: () => this.messageService.add({ severity: 'error', summary: 'No se pudo eliminar', detail: `${p.nombre} ${p.apellido}` })
+        });
+      }
     });
   }
 

@@ -32,11 +32,15 @@
             <span class="p-input-icon-left">
                 <input class="p-inputtext searchBar" type="search" placeholder="Buscar nombre, cédula, puesto…" [ngModel]="busqueda()" (ngModelChange)="busqueda.set($event)" aria-label="Buscar postulaciones" />
             </span>
+            @if (seleccion.length) {
+                <button type="button" class="btn-delete" (click)="eliminarVarias(seleccion)" [attr.aria-label]="'Eliminar ' + seleccion.length + ' postulaciones'"><i class="pi pi-trash"></i></button>
+            }
         </div>
 
-        <p-table [value]="visibles()" [rows]="10" [paginator]="visibles().length > 10" [loading]="cargando()" dataKey="idPostulacion">
+        <p-table [(selection)]="seleccion" [value]="visibles()" [rows]="10" [paginator]="visibles().length > 10" [loading]="cargando()" dataKey="idPostulacion">
             <ng-template pTemplate="header">
                 <tr>
+                    <th class="sel"><p-tableHeaderCheckbox /></th>
                     <th>Postulante</th>
                     <th>Puesto</th>
                     <th>Contacto</th>
@@ -46,6 +50,7 @@
             </ng-template>
             <ng-template pTemplate="body" let-p>
                 <tr>
+                    <td class="sel"><p-tableCheckbox [value]="p" /></td>
                     <td class="postulante">
                         <strong>{{ p.nombre }} {{ p.apellido }}</strong>
                         <small>{{ p.cedula }}</small>
@@ -70,7 +75,7 @@
             </ng-template>
             <ng-template pTemplate="emptymessage">
                 <tr>
-                    <td colspan="5" class="vacio">{{ lista().length ? 'Ninguna postulación coincide con el filtro.' : 'Todavía no hay postulaciones.' }}</td>
+                    <td colspan="6" class="vacio">{{ lista().length ? 'Ninguna postulación coincide con el filtro.' : 'Todavía no hay postulaciones.' }}</td>
                 </tr>
             </ng-template>
         </p-table>

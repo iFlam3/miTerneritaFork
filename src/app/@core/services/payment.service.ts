@@ -45,6 +45,14 @@ export class PaymentService {
     );
   }
 
+  refresh(){
+    this.refreshPayments$.next();
+  }
+
+  deletePayment(id: number){
+    return this.http.delete(`${this.api}/payment/${id}`);
+  }
+
   updatePayment(id: number, body: any){
     return this.http.patch(`${this.api}/payment/${id}/status`, body).pipe(
       tap(() => this.refreshPayments$.next())
