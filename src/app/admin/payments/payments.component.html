@@ -14,7 +14,7 @@
           #dt1
           [value]="state"
           dataKey="idPayment"
-          [(selection)]="seleccion"
+          [(selection)]="seleccion" [selectionPageOnly]="true"
           [rows]="5"
           [paginator]="true"
           [globalFilterFields]="['idUser.name', 'idUser.lastName', 'idUser.cedula', 'idEvents.name', 'status']"
