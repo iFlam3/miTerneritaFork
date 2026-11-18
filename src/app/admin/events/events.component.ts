@@ -15,6 +15,7 @@ import { MessageService } from 'primeng/api';
 import { ConfirmDeleteModalComponent } from '../../shared/components/confirm-delete-modal/confirm-delete-modal.component';
 import { FormsModule } from '@angular/forms';
 import { LoaderComponent } from '../../@core/components/loader/loader.component';
+import { borrarConAviso } from '../../shared/borrar-con-aviso';
 
 @Component({
   selector: 'app-events',
@@ -152,9 +153,9 @@ export class EventsComponent implements OnInit{
   
 
    private executeDeleteEvent(id: number){
-    this.eventsService.deleteEvent(id).subscribe({
-      next: () => {
-        this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Evento eliminado correctamente' });
+    borrarConAviso(this.dialogService, c => this.eventsService.deleteEvent(id, c)).subscribe({
+      next: (res: any) => {
+        this.messageService.add({ severity: 'success', summary: 'Éxito', detail: res?.message ?? 'Evento eliminado correctamente' });
       },
       error: () => {
         this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Ocurrió un error al eliminar el evento' });

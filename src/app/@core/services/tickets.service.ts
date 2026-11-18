@@ -43,8 +43,8 @@ export class TicketsService {
     );
   }
 
-  deleteTicket(id: number){
-    return this.http.delete(`${this.api}/ticket/${id}`).pipe(
+  deleteTicket(id: number, confirmar = false){
+    return this.http.delete(`${this.api}/ticket/${id}`, { params: confirmar ? { confirmar: 'true' } : {} }).pipe(
       tap(() => this.refreshTickets$.next())
     );
   }

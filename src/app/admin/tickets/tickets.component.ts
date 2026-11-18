@@ -15,6 +15,7 @@ import { CreateTicketsComponent } from './components/create-tickets/create-ticke
 import { UpdateTicketsComponent } from './components/update-tickets/update-tickets.component';
 import { ConfirmDeleteModalComponent } from '../../shared/components/confirm-delete-modal/confirm-delete-modal.component';
 import { LoaderComponent } from '../../@core/components/loader/loader.component';
+import { borrarConAviso } from '../../shared/borrar-con-aviso';
 
 /** Orden de los tipos conocidos; el resto va después, por nombre. */
 const ORDEN_TIPOS = ['general', 'vip', 'palco a', 'palco b'];
@@ -162,7 +163,7 @@ export class TicketsComponent {
         message:
           tickets.length === 1
             ? `¿Eliminar la entrada ${nombre}?`
-            : `¿Eliminar ${nombre} de sus ${tickets.length} eventos? Las que ya tienen ventas se conservan.`,
+            : `¿Eliminar ${nombre} de sus ${tickets.length} eventos?`,
         selectedItems: tickets
       }
     });
@@ -170,7 +171,7 @@ export class TicketsComponent {
     this.ref.onClose.subscribe((confirmed: boolean) => {
       if (!confirmed) return;
       for (const t of tickets) {
-        this.ticketsService.deleteTicket(t.idTicket).subscribe({
+        borrarConAviso(this.dialogService, c => this.ticketsService.deleteTicket(t.idTicket, c)).subscribe({
           next: () => this.messageService.add({ severity: 'success', summary: 'Éxito', detail: `${t.name} eliminada` }),
           error: err => this.messageService.add({ severity: 'error', summary: 'No se eliminó', detail: err?.error?.message ?? 'Ocurrió un error al eliminar la entrada' })
         });

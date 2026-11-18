@@ -96,8 +96,8 @@ export class EventsService {
     );
   }
 
-  deleteEvent(id: number){
-    return this.http.delete(`${this.api}/events/${id}`).pipe(
+  deleteEvent(id: number, confirmar = false){
+    return this.http.delete(`${this.api}/events/${id}`, { params: confirmar ? { confirmar: 'true' } : {} }).pipe(
       tap(() => this.refreshEvents$.next())
     );
   }

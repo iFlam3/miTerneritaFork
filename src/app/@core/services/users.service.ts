@@ -36,8 +36,8 @@ export class UsersService {
     );
   }
 
-  deleteUser(id: number){
-    return this.http.delete(`${this.api}/users/${id}`).pipe(
+  deleteUser(id: number, confirmar = false){
+    return this.http.delete(`${this.api}/users/${id}`, { params: confirmar ? { confirmar: 'true' } : {} }).pipe(
       tap(() => {
         this.refreshUsers$.next(); // Notify subscribers to refresh the users list
       }),

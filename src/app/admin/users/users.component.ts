@@ -13,6 +13,7 @@ import { ConfirmDeleteModalComponent } from '../../shared/components/confirm-del
 import { LoaderComponent } from '../../@core/components/loader/loader.component';
 import { EditUserComponent } from './components/edit-user/edit-user.component';
 import { CreateUserComponent } from './components/create-user/create-user.component';
+import { borrarConAviso } from '../../shared/borrar-con-aviso';
 
 @Component({
   selector: 'app-users',
@@ -98,12 +99,12 @@ export class UsersComponent implements OnInit {
 
   private executeDeleteUser(id: number){
 
-      this.usersService.deleteUser(id).subscribe({
+      borrarConAviso(this.dialogService, c => this.usersService.deleteUser(id, c)).subscribe({
         next: () => {
           this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Usuario eliminado correctamente' });
         },
-        error: () => {
-          this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Ocurrió un error al eliminar el usuario' });
+        error: (err) => {
+          this.messageService.add({ severity: 'error', summary: 'Error', detail: err?.error?.message ?? 'Ocurrió un error al eliminar el usuario' });
         }
       })
     }
