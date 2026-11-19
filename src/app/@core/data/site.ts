@@ -32,9 +32,9 @@ export const PARTNERS: Partner[] = [
 
 /** Espacios del local (sección "Conoce nuestros espacios"). */
 export const SPACES = [
-  { name: 'Bar', image: 'assets/img/optimized/zona3.webp' },
-  { name: 'Lobby', image: 'assets/img/optimized/zona1.webp' },
+  { name: 'Barra', image: 'assets/img/optimized/zona3.webp' },
+  { name: 'Manhattan bar', image: 'assets/img/optimized/zona1.webp' },
   { name: 'Barra', image: 'assets/img/optimized/zona2.webp' },
-  { name: 'Sala', image: 'assets/img/optimized/sillas1.webp' },
-  { name: 'Terraza', image: 'assets/img/optimized/sillas2.webp' }
+  { name: 'Comedor', image: 'assets/img/optimized/sillas1.webp' },
+  { name: 'Salón Chicago', image: 'assets/img/optimized/sillas2.webp' }
 ] as const;
