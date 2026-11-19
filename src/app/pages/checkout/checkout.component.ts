@@ -89,8 +89,13 @@ export class CheckoutComponent implements OnInit {
     return c.invalid && (c.touched || c.dirty);
   }
 
+  /** Paso anterior real: consumo si el evento lo tiene, si no entradas; con lo elegido. */
   back() {
-    this.router.navigate(['/home/event', this.idEvents, 'ticket']);
+    const paso = this.event()?.consumo === 1 ? 'consume' : null;
+    this.router.navigate(['/home/event', this.idEvents, 'ticket', ...(paso ? [paso] : [])], {
+      state: { selected: this.selected, consumo: this.consumo, asientos: this.asientos },
+      replaceUrl: true
+    });
   }
 
   proceedToPayment() {

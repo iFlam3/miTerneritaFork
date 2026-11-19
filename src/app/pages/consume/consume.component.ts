@@ -90,6 +90,9 @@ export class ConsumeComponent implements OnInit {
     this.idEvent = Number(this.route.snapshot.paramMap.get('id'));
     this.selected = (history.state?.selected as SelectedItem[]) ?? [];
     this.asientos = (history.state?.asientos as string[]) ?? [];
+    // Al volver desde "Tus datos" llega el consumo que ya se había elegido.
+    const previo = (history.state?.consumo as LineaConsumo[] | undefined) ?? [];
+    this.cart.set(Object.fromEntries(previo.map(l => [l.idFood ? `f${l.idFood}` : `d${l.idDrinks}`, l.cantidad])));
 
     this.eventsService.getEventById(this.idEvent).subscribe({
       next: event => {
@@ -129,8 +132,12 @@ export class ConsumeComponent implements OnInit {
     this.cart.update(c => ({ ...c, [this.key(p)]: Math.max(this.qty(p) - 1, 0) }));
   }
 
+  /** Volver a entradas conservando lo elegido (ticket lo restaura del state). */
   back() {
-    this.router.navigate(['/home/event', this.idEvent, 'ticket']);
+    this.router.navigate(['/home/event', this.idEvent, 'ticket'], {
+      state: { selected: this.selected, asientos: this.asientos },
+      replaceUrl: true
+    });
   }
 
   continue() {

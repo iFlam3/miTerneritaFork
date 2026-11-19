@@ -1,4 +1,5 @@
-import { DatePipe, DecimalPipe, DOCUMENT } from '@angular/common';
+import { DatePipe, DecimalPipe, DOCUMENT, Location } from '@angular/common';
+import { Router } from '@angular/router';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Component, computed, effect, ElementRef, HostListener, inject, OnDestroy, signal, viewChild } from '@angular/core';
 import { environment } from '../../../environments/environment.developer';
@@ -144,6 +145,8 @@ export class PuertaComponent implements OnDestroy {
   private http = inject(HttpClient);
   private auth = inject(AuthService);
   private doc = inject(DOCUMENT);
+  private router = inject(Router);
+  private location = inject(Location);
   private api = environment.api;
 
   readonly usuario = signal<User | null>(this.auth.isAuthenticated() ? this.auth.getUser() : null);
@@ -224,6 +227,19 @@ export class PuertaComponent implements OnDestroy {
       error: (err: HttpErrorResponse) =>
         this.errorIngreso.set(err.status === 0 ? 'No se pudo conectar con el servidor.' : mensaje(err) || 'Correo o contraseña incorrectos.')
     });
+  }
+
+  /**
+   * Volver sin cerrar sesion: a la pagina anterior si se llego desde la web;
+   * en la app instalada (abre directo en /puerta) al panel o al inicio.
+   */
+  volver() {
+    // Hubo otra pantalla de la web antes de /puerta: se vuelve a ella.
+    if (this.router.lastSuccessfulNavigation?.previousNavigation) {
+      this.location.back();
+    } else {
+      this.router.navigateByUrl(this.esAdmin() ? '/admin/payments' : '/');
+    }
   }
 
   salir(motivo = '') {

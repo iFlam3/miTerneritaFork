@@ -27,6 +27,7 @@
 } @else {
     <div class="puerta">
         <header class="barra">
+            <button type="button" class="tm-icon-btn volver" aria-label="Volver sin cerrar sesión" title="Volver" (click)="volver()"><i class="pi pi-arrow-left"></i></button>
             <p class="hola"><small>Hola,</small> <strong>{{ nombre() }}</strong></p>
             <div class="barra-acciones">
                 @if (instalable()) {

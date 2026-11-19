@@ -106,6 +106,11 @@ export class TicketComponent implements OnInit {
   asientosOrdenados = computed(() => [...this.asientos()].sort((a, b) => a.localeCompare(b, 'es', { numeric: true })));
 
   ngOnInit() {
+    // Al volver desde consumo o datos: se recuperan las cantidades elegidas
+    // (los puestos del mapa vuelven solos: siguen apartados a nombre del cliente).
+    const previas = (history.state?.selected as { id: number; cantidad: number }[] | undefined) ?? [];
+    if (previas.length) this.quantities.set(Object.fromEntries(previas.map(s => [s.id, s.cantidad])));
+
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
       this.load(Number(id));
