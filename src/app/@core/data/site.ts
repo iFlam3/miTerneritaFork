@@ -35,6 +35,6 @@ export const SPACES = [
   { name: 'Barra', image: 'assets/img/optimized/zona3.webp' },
   { name: 'Manhattan bar', image: 'assets/img/optimized/zona1.webp' },
   { name: 'Barra', image: 'assets/img/optimized/zona2.webp' },
-  { name: 'Comedor', image: 'assets/img/optimized/sillas1.webp' },
-  { name: 'Salón Chicago', image: 'assets/img/optimized/sillas2.webp' }
+  { name: 'Salón Chicago', image: 'assets/img/optimized/sillas1.webp' },
+  { name: 'Comedor', image: 'assets/img/optimized/sillas2.webp' }
 ] as const;
