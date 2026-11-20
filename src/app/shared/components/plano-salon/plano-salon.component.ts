@@ -1,5 +1,5 @@
 import { DecimalPipe } from '@angular/common';
-import { afterNextRender, Component, computed, ElementRef, input, output, viewChild } from '@angular/core';
+import { afterNextRender, Component, computed, ElementRef, input, output, signal, viewChild } from '@angular/core';
 import { coloresZonas, MesaPlano, PlanoSalon, ZonaPlano } from '../../../@core/models/salon.model';
 
 /**
@@ -7,6 +7,7 @@ import { coloresZonas, MesaPlano, PlanoSalon, ZonaPlano } from '../../../@core/m
  * - modo "compra": tocar un puesto lo elige; tocar el número de la mesa elige
  *   todos sus puestos libres. Los ocupados salen en gris y no se pueden tocar.
  * - modo "admin": tocar una mesa (o cualquiera de sus puestos) le asigna la zona.
+ *   Con el ratón también se arrastra un rectángulo para asignar (o quitar con Alt) varias mesas.
  */
 @Component({
   selector: 'app-plano-salon',
@@ -26,7 +27,8 @@ import { coloresZonas, MesaPlano, PlanoSalon, ZonaPlano } from '../../../@core/m
     </div>
 
     <div class="lienzo" #lienzo>
-      <svg [attr.viewBox]="plano().viewBox" role="group" [attr.aria-label]="modo() === 'compra' ? 'Mapa de puestos' : 'Mapa de mesas'">
+      <svg #svg [attr.viewBox]="plano().viewBox" [class.arrastrando]="marco()" role="group"
+           (pointerdown)="empezarMarco($event)" (pointermove)="moverMarco($event)" (pointerup)="soltarMarco($event)" (pointercancel)="marco.set(null)" [attr.aria-label]="modo() === 'compra' ? 'Mapa de puestos' : 'Mapa de mesas'">
         <rect class="escenario" [attr.x]="plano().escenario.x" [attr.y]="plano().escenario.y" [attr.width]="plano().escenario.w" [attr.height]="plano().escenario.h" rx="6" />
         <text class="rotulo" [attr.x]="plano().escenario.x + plano().escenario.w / 2" [attr.y]="plano().escenario.y + plano().escenario.h / 2">ESCENARIO</text>
         <rect class="barra" [attr.x]="plano().barra.x" [attr.y]="plano().barra.y" [attr.width]="plano().barra.w" [attr.height]="plano().barra.h" rx="6" />
@@ -51,12 +53,16 @@ import { coloresZonas, MesaPlano, PlanoSalon, ZonaPlano } from '../../../@core/m
             }
             <g class="numero" role="button" [attr.tabindex]="color || modo() === 'admin' ? 0 : -1"
                [attr.aria-label]="(modo() === 'compra' ? 'Elegir la mesa completa ' : 'Asignar zona a la mesa ') + m.mesa"
-               (click)="mesa.emit(m.mesa)" (keydown.enter)="mesa.emit(m.mesa)">
+               (click)="tocarMesa(m.mesa)" (keydown.enter)="mesa.emit(m.mesa)">
               <title>{{ modo() === 'compra' ? 'Mesa ' + m.mesa + ': elegir la mesa completa' : 'Mesa ' + m.mesa }}</title>
               <circle [attr.cx]="m.nx" [attr.cy]="m.ny" r="9" />
               <text [attr.x]="m.nx" [attr.y]="m.ny">{{ m.mesa }}</text>
             </g>
           </g>
+        }
+
+        @if (marco(); as r) {
+          <rect class="marco" [class.quitar]="r.quitar" [attr.x]="r.x" [attr.y]="r.y" [attr.width]="r.w" [attr.height]="r.h" rx="3" />
         }
       </svg>
     </div>
@@ -257,6 +263,23 @@ import { coloresZonas, MesaPlano, PlanoSalon, ZonaPlano } from '../../../@core/m
       }
     }
 
+    .marco {
+      fill: var(--primary-soft);
+      stroke: var(--primary);
+      stroke-width: 1.5;
+      stroke-dasharray: 5 3;
+      pointer-events: none;
+
+      &.quitar {
+        fill: rgba(239, 68, 68, 0.12);
+        stroke: #ef4444;
+      }
+    }
+
+    .arrastrando {
+      cursor: crosshair;
+    }
+
     .sin-zona:not(.admin) .numero {
       cursor: default;
       pointer-events: none;
@@ -276,6 +299,15 @@ export class PlanoSalonComponent {
   asiento = output<string>();
   /** Número de mesa tocado (compra: mesa completa; admin: asignar zona). */
   mesa = output<number>();
+  /** Mesas dentro del rectángulo arrastrado (solo admin); quitar = se arrastró con Alt. */
+  mesas = output<{ mesas: number[]; quitar: boolean }>();
+
+  /** Rectángulo de selección en coordenadas del plano. */
+  marco = signal<{ x: number; y: number; w: number; h: number; quitar: boolean } | null>(null);
+  private svg = viewChild.required<ElementRef<SVGSVGElement>>('svg');
+  private inicio: { x: number; y: number; px: number; py: number } | null = null;
+  /** El click que llega al soltar un arrastre no debe asignar además la mesa de debajo. */
+  private trasArrastre = false;
 
   private colores = computed(() => coloresZonas(this.tickets()));
   private lienzo = viewChild.required<ElementRef<HTMLElement>>('lienzo');
@@ -323,7 +355,46 @@ export class PlanoSalonComponent {
     return `Puesto ${id}, mesa ${m.mesa}: ${textos[estado]}`;
   }
 
+  tocarMesa(mesa: number) {
+    if (!this.trasArrastre) this.mesa.emit(mesa);
+  }
+
+  private punto(e: PointerEvent) {
+    const p = new DOMPoint(e.clientX, e.clientY).matrixTransform(this.svg().nativeElement.getScreenCTM()!.inverse());
+    return { x: p.x, y: p.y };
+  }
+
+  // shortcut: solo ratón; en táctil arrastrar desplaza el plano, ahí se asigna tocando.
+  empezarMarco(e: PointerEvent) {
+    this.trasArrastre = false;
+    if (this.modo() !== 'admin' || e.pointerType !== 'mouse' || e.button !== 0) return;
+    this.inicio = { ...this.punto(e), px: e.clientX, py: e.clientY };
+  }
+
+  moverMarco(e: PointerEvent) {
+    const i = this.inicio;
+    if (!i) return;
+    // Unos píxeles de tolerancia: un click con pulso tembloroso sigue siendo click.
+    if (!this.marco() && Math.hypot(e.clientX - i.px, e.clientY - i.py) < 6) return;
+    if (!this.marco()) this.svg().nativeElement.setPointerCapture(e.pointerId);
+    const p = this.punto(e);
+    this.marco.set({ x: Math.min(i.x, p.x), y: Math.min(i.y, p.y), w: Math.abs(p.x - i.x), h: Math.abs(p.y - i.y), quitar: e.altKey });
+  }
+
+  soltarMarco(e: PointerEvent) {
+    const r = this.marco();
+    this.inicio = null;
+    this.marco.set(null);
+    if (!r) return;
+    this.trasArrastre = true;
+    const mesas = this.plano()
+      .mesas.filter(m => m.x < r.x + r.w && m.x + m.w > r.x && m.y < r.y + r.h && m.y + m.h > r.y)
+      .map(m => m.mesa);
+    if (mesas.length) this.mesas.emit({ mesas, quitar: e.altKey });
+  }
+
   tocarAsiento(m: MesaPlano, id: string, estado: string) {
+    if (this.trasArrastre) return;
     if (this.modo() === 'admin') {
       this.mesa.emit(m.mesa);
     } else if (estado === 'libre' || estado === 'elegido') {

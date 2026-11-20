@@ -27,7 +27,7 @@ import { PlanoSalonComponent } from '../../shared/components/plano-salon/plano-s
         <div class="catalog-head">
           <div class="title">
             <h1>Mapa de mesas</h1>
-            <p>Elige el evento y una entrada; luego toca las mesas que la venden. Tócala otra vez para quitarla. Las mesas sin entrada no se venden.</p>
+            <p>Elige el evento y una entrada; luego toca las mesas que la venden (o arrastra el ratón para marcar varias). Tócala otra vez para quitarla; Alt + arrastrar quita varias. Las mesas sin entrada no se venden.</p>
           </div>
           <div class="buttons">
             <label class="selector">
@@ -73,7 +73,7 @@ import { PlanoSalonComponent } from '../../shared/components/plano-salon/plano-s
             }
           </div>
 
-          <app-plano-salon modo="admin" [plano]="plano()!" [zonas]="zonas()" [tickets]="tickets()" [ocupados]="ocupados()" (mesa)="onMesa($event)" />
+          <app-plano-salon modo="admin" [plano]="plano()!" [zonas]="zonas()" [tickets]="tickets()" [ocupados]="ocupados()" (mesa)="onMesa($event)" (mesas)="onMesas($event)" />
         }
       </div>
     </div>
@@ -293,6 +293,20 @@ export class SalonComponent {
     this.zonas.update(z => {
       const { [mesa]: actual, ...resto } = z;
       return actual === idTicket ? resto : { ...resto, [mesa]: idTicket };
+    });
+  }
+
+  /** Rectángulo arrastrado en el plano: asigna la entrada elegida a esas mesas, o las quita (Alt). */
+  onMesas({ mesas, quitar }: { mesas: number[]; quitar: boolean }) {
+    const idTicket = this.pincel();
+    if (!idTicket && !quitar) return;
+    this.zonas.update(z => {
+      const nuevo = { ...z };
+      for (const mesa of mesas) {
+        if (quitar) delete nuevo[mesa];
+        else nuevo[mesa] = idTicket!;
+      }
+      return nuevo;
     });
   }
 
