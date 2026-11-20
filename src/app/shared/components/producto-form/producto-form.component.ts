@@ -1,3 +1,4 @@
+import { DropFilesDirective } from '../../directives/drop-files.directive';
 import { Component, inject, OnDestroy, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MessageService } from 'primeng/api';
@@ -23,7 +24,7 @@ const MAX_DETALLE = 150;
  */
 @Component({
   selector: 'app-producto-form',
-  imports: [ReactiveFormsModule, InputText, SelectModule, ToggleSwitch],
+  imports: [DropFilesDirective, ReactiveFormsModule, InputText, SelectModule, ToggleSwitch],
   templateUrl: './producto-form.component.html'
 })
 export class ProductoFormComponent implements OnDestroy {

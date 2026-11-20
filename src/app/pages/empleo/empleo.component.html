@@ -97,7 +97,7 @@
                             <button type="button" class="cv-quitar" (click)="cvInput.value = ''; cv.set(null)" aria-label="Quitar el CV"><i class="pi pi-times"></i></button>
                         </div>
                     } @else {
-                        <label class="cv-elegir" for="em-cv">
+                        <label class="cv-elegir" for="em-cv" [appDropFiles]="cvInput">
                             <i class="pi pi-upload" aria-hidden="true"></i>
                             <span><strong>Adjuntar CV</strong><small>Solo PDF, hasta 500 KB</small></span>
                         </label>

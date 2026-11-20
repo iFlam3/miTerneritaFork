@@ -1,3 +1,4 @@
+import { DropFilesDirective } from '../../../../shared/directives/drop-files.directive';
 import { cierreVentaIso, partirCierreVenta } from '../../../../@core/utils/event-utils';
 import { Component, inject, OnInit, viewChild } from '@angular/core';
 import { switchMap } from 'rxjs';
@@ -19,7 +20,7 @@ import { ToggleSwitch } from 'primeng/toggleswitch';
 
 @Component({
   selector: 'app-update-events',
-  imports: [
+  imports: [DropFilesDirective, 
     CommonModule,
     InputText,
     ButtonModule,

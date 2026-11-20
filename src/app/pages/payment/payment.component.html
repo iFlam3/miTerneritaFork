@@ -134,7 +134,7 @@
                             </button>
                         </div>
                     }
-                    <label class="dropzone" [class.is-hidden]="previewUrl">
+                    <label class="dropzone" [appDropFiles]="fileInput" [class.is-hidden]="previewUrl">
                         <input #fileInput type="file" accept="image/*" (change)="onFileSelect($event)" />
                         <span class="dz-icon"><i class="pi pi-cloud-upload"></i></span>
                         <strong>Adjunta tu comprobante</strong>

@@ -2,7 +2,7 @@
     <div class="adm-layout">
         <div class="adm-photo-wrap">
             <input #fileInput type="file" accept="image/*" hidden (change)="elegirFoto($event)" />
-            <button type="button" class="adm-photo" [class.has-img]="preview()" (click)="fileInput.click()" [attr.aria-label]="preview() ? 'Cambiar foto' : 'Subir foto'">
+            <button type="button" class="adm-photo" [class.has-img]="preview()" (click)="fileInput.click()" [appDropFiles]="fileInput" [attr.aria-label]="preview() ? 'Cambiar foto' : 'Subir foto'">
                 @if (preview(); as src) {
                     <img class="fondo" [src]="src" alt="" aria-hidden="true" />
                     <img class="foto" [src]="src" alt="Foto del producto" />
@@ -11,7 +11,7 @@
                 }
             </button>
             <div class="adm-photo-actions">
-                <button type="button" (click)="fileInput.click()">{{ preview() ? 'Cambiar foto' : 'Elegir archivo' }}</button>
+                <button type="button" (click)="fileInput.click()" [appDropFiles]="fileInput">{{ preview() ? 'Cambiar foto' : 'Elegir archivo' }}</button>
                 @if (archivo()) {
                     <button type="button" class="quitar" (click)="descartarFoto(fileInput)">Descartar</button>
                 }

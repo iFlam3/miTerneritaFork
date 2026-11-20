@@ -1,3 +1,4 @@
+import { DropFilesDirective } from '../../../../shared/directives/drop-files.directive';
 import { cierreVentaIso } from '../../../../@core/utils/event-utils';
 import { CommonModule } from '@angular/common';
 import { Component, inject, viewChild } from '@angular/core';
@@ -16,7 +17,7 @@ import { ToggleSwitch } from 'primeng/toggleswitch';
 
 @Component({
   selector: 'app-create-events',
-  imports: [
+  imports: [DropFilesDirective, 
     CommonModule,
     InputText,
     ButtonModule,

@@ -1,3 +1,4 @@
+import { DropFilesDirective } from '../../shared/directives/drop-files.directive';
 import { DecimalPipe } from '@angular/common';
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -10,7 +11,7 @@ import { RevealDirective } from '../../shared/directives/reveal.directive';
 /** "Trabaja con nosotros": formulario público de postulación. */
 @Component({
   selector: 'app-empleo',
-  imports: [DecimalPipe, ReactiveFormsModule, RouterLink, RevealDirective],
+  imports: [DropFilesDirective, DecimalPipe, ReactiveFormsModule, RouterLink, RevealDirective],
   templateUrl: './empleo.component.html',
   styleUrl: './empleo.component.scss'
 })

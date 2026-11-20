@@ -1,3 +1,4 @@
+import { DropFilesDirective } from '../../shared/directives/drop-files.directive';
 import { DatePipe, DecimalPipe } from '@angular/common';
 import { Component, computed, effect, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { FormBuilder, FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -60,7 +61,7 @@ import { VisitasService } from '../../@core/services/visitas.service';
 
 @Component({
   selector: 'app-payment',
-  imports: [CapFirstPipe, DatePipe, DecimalPipe, ReactiveFormsModule, RouterLink, PurchaseStepsComponent, PriceSummaryComponent],
+  imports: [DropFilesDirective, CapFirstPipe, DatePipe, DecimalPipe, ReactiveFormsModule, RouterLink, PurchaseStepsComponent, PriceSummaryComponent],
   templateUrl: './payment.component.html',
   styleUrl: './payment.component.scss'
 })

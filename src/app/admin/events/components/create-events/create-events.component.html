@@ -78,7 +78,7 @@
             @for (f of fotos; track f.key) {
                 <div class="adm-photo-wrap">
                     <input #fotoInput type="file" accept="image/*" hidden (change)="onFileSelect($event, f.key)" />
-                    <button type="button" class="adm-photo" [class.adm-photo--poster]="f.key === 'flyer'" [class.has-img]="getPreviewSrc(f.key)" (click)="fotoInput.click()" [attr.aria-label]="'Subir ' + f.label">
+                    <button type="button" class="adm-photo" [class.adm-photo--poster]="f.key === 'flyer'" [class.has-img]="getPreviewSrc(f.key)" (click)="fotoInput.click()" [appDropFiles]="fotoInput" [attr.aria-label]="'Subir ' + f.label">
                         @if (getPreviewSrc(f.key); as src) {
                             <img class="fondo" [src]="src" alt="" aria-hidden="true" />
                             <img class="foto" [src]="src" [alt]="f.label" />
@@ -88,7 +88,7 @@
                     </button>
                     <small>{{ f.label }}</small>
                     <div class="adm-photo-actions">
-                        <button type="button" (click)="fotoInput.click()">{{ getPreviewSrc(f.key) ? 'Cambiar' : 'Subir' }}</button>
+                        <button type="button" (click)="fotoInput.click()" [appDropFiles]="fotoInput">{{ getPreviewSrc(f.key) ? 'Cambiar' : 'Subir' }}</button>
                         @if (esNueva(f.key)) {
                             <button type="button" class="quitar" (click)="fotoInput.value = ''; removeSelectedFile(f.key)">Descartar</button>
                         }

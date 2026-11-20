@@ -736,3 +736,10 @@
     display: none;
   }
 }
+
+// Zona de soltar archivos (directiva appDropFiles) con un archivo encima
+.drop-encima {
+  outline: 2px dashed var(--primary);
+  outline-offset: 3px;
+  background-color: var(--primary-soft) !important;
+}
