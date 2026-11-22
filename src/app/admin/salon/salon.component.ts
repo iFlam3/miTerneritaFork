@@ -27,7 +27,7 @@ import { PlanoSalonComponent } from '../../shared/components/plano-salon/plano-s
         <div class="catalog-head">
           <div class="title">
             <h1>Mapa de mesas</h1>
-            <p>Elige el evento y una entrada; luego toca las mesas que la venden (o arrastra el ratón para marcar varias). Tócala otra vez para quitarla; Alt + arrastrar quita varias. Las mesas sin entrada no se venden.</p>
+            <p>Elige el evento y una entrada; luego toca las mesas que la venden (o arrastra el ratón para marcar varias). Tócala otra vez para quitarla; Alt + arrastrar quita varias. Las mesas sin entrada no se venden. Con «Vendida», cada puesto que toques queda vendido (o se libera) al instante.</p>
           </div>
           <div class="buttons">
             <label class="selector">
@@ -63,17 +63,26 @@ import { PlanoSalonComponent } from '../../shared/components/plano-salon/plano-s
                 </span>
               </button>
             }
+            <button type="button" class="pincel" [class.activo]="pincel() === POR_FUERA" [attr.aria-pressed]="pincel() === POR_FUERA" (click)="pincel.set(POR_FUERA)">
+              <i class="res"></i>
+              <span>
+                <strong>Vendida</strong>
+                <small>{{ porFuera().length ? porFuera().length + (porFuera().length === 1 ? ' puesto' : ' puestos') : 'VVIP o venta sin pago en el sistema' }}</small>
+              </span>
+            </button>
           </div>
 
           <div class="acciones">
-            <button type="button" class="tm-btn tm-btn--ghost tm-btn--sm" (click)="todas()">Todas las mesas con {{ nombrePincel() }}</button>
+            @if (pincel() !== POR_FUERA) {
+              <button type="button" class="tm-btn tm-btn--ghost tm-btn--sm" (click)="todas()">Todas las mesas con {{ nombrePincel() }}</button>
+            }
             <button type="button" class="tm-btn tm-btn--ghost tm-btn--sm" [disabled]="!hayMesas()" (click)="zonas.set({})">Quitar todas</button>
             @if (sucio()) {
               <span class="sucio" role="status"><i class="pi pi-circle-fill"></i> Cambios sin guardar</span>
             }
           </div>
 
-          <app-plano-salon modo="admin" [plano]="plano()!" [zonas]="zonas()" [tickets]="tickets()" [ocupados]="ocupados()" (mesa)="onMesa($event)" (mesas)="onMesas($event)" />
+          <app-plano-salon modo="admin" [plano]="plano()!" [zonas]="zonas()" [tickets]="tickets()" [ocupados]="ocupados()" [porFuera]="porFuera()" [reservando]="pincel() === POR_FUERA" (mesa)="onMesa($event)" (mesas)="onMesas($event)" (asiento)="onAsiento($event)" />
         }
       </div>
     </div>
@@ -171,6 +180,11 @@ import { PlanoSalonComponent } from '../../shared/components/plano-salon/plano-s
         border-radius: 4px;
       }
 
+      i.res {
+        background: #f5f5f4;
+        outline: 1.5px solid #d4a017;
+      }
+
       span {
         display: grid;
       }
@@ -224,6 +238,9 @@ export class SalonComponent {
   readonly zonas = signal<Record<number, number>>({});
   private guardadas = signal<Record<number, number>>({});
   readonly ocupados = signal<Record<string, string>>({});
+  readonly porFuera = signal<string[]>([]);
+  /** Valor del "pincel" que vende puestos por fuera en vez de asignar zonas. */
+  readonly POR_FUERA = -1;
   /** Entrada que se asigna al tocar una mesa. */
   readonly pincel = signal<number | null>(null);
   readonly cargando = signal(false);
@@ -276,6 +293,7 @@ export class SalonComponent {
         this.zonas.set(estado.zonas);
         this.guardadas.set(estado.zonas);
         this.ocupados.set(estado.ocupados);
+        this.porFuera.set(estado.porFuera ?? []);
         this.pincel.set(tickets?.[0]?.idTicket ?? null);
         this.cargando.set(false);
       },
@@ -286,10 +304,38 @@ export class SalonComponent {
     });
   }
 
+  /**
+   * Con «Vendida»: marca o libera el puesto. Se ve al instante y se
+   * guarda después; si el servidor lo rechaza, vuelve a como estaba.
+   */
+  onAsiento(asiento: string) {
+    const idEvents = this.idEvento();
+    if (!idEvents) return;
+    const vendido = !this.porFuera().includes(asiento);
+    if (vendido && this.ocupados()[asiento]) {
+      this.messageService.add({ severity: 'warn', summary: 'Puesto ocupado', detail: `${asiento} ya está vendido o apartado por un cliente` });
+      return;
+    }
+    const antes = { porFuera: this.porFuera(), ocupados: this.ocupados() };
+    this.porFuera.update(p => (vendido ? [...p, asiento] : p.filter(a => a !== asiento)));
+    this.salonService.porFuera(idEvents, asiento, vendido).subscribe({
+      next: estado => {
+        if (this.idEvento() !== idEvents) return;
+        this.ocupados.set(estado.ocupados);
+        this.porFuera.set(estado.porFuera ?? []);
+      },
+      error: err => {
+        this.porFuera.set(antes.porFuera);
+        this.ocupados.set(antes.ocupados);
+        this.messageService.add({ severity: 'error', summary: 'No se guardó', detail: err?.error?.message ?? `No se pudo cambiar ${asiento}` });
+      }
+    });
+  }
+
   /** Asigna la entrada elegida a la mesa; si ya la tenía, la quita. */
   onMesa(mesa: number) {
     const idTicket = this.pincel();
-    if (!idTicket) return;
+    if (!idTicket || idTicket === this.POR_FUERA) return;
     this.zonas.update(z => {
       const { [mesa]: actual, ...resto } = z;
       return actual === idTicket ? resto : { ...resto, [mesa]: idTicket };
@@ -299,6 +345,7 @@ export class SalonComponent {
   /** Rectángulo arrastrado en el plano: asigna la entrada elegida a esas mesas, o las quita (Alt). */
   onMesas({ mesas, quitar }: { mesas: number[]; quitar: boolean }) {
     const idTicket = this.pincel();
+    if (idTicket === this.POR_FUERA) return;
     if (!idTicket && !quitar) return;
     this.zonas.update(z => {
       const nuevo = { ...z };
@@ -312,7 +359,7 @@ export class SalonComponent {
 
   todas() {
     const idTicket = this.pincel();
-    if (!idTicket) return;
+    if (!idTicket || idTicket === this.POR_FUERA) return;
     this.zonas.set(Object.fromEntries((this.plano()?.mesas ?? []).map(m => [m.mesa, idTicket])));
   }
 
@@ -327,6 +374,7 @@ export class SalonComponent {
         this.zonas.set(estado.zonas);
         this.guardadas.set(estado.zonas);
         this.ocupados.set(estado.ocupados);
+        this.porFuera.set(estado.porFuera ?? []);
         this.messageService.add({
           severity: 'success',
           summary: 'Mapa guardado',

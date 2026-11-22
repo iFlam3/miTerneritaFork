@@ -21,6 +21,9 @@ import { coloresZonas, MesaPlano, PlanoSalon, ZonaPlano } from '../../../@core/m
         <span class="chip"><i class="sel"></i>Tu selección</span>
       }
       <span class="chip"><i class="ocu"></i>{{ modo() === 'compra' ? 'Ocupado' : 'Vendido o apartado' }}</span>
+      @if (modo() === 'admin') {
+        <span class="chip"><i class="res"></i>Vendido por fuera</span>
+      }
       @if (haySinZona()) {
         <span class="chip"><i class="sin"></i>{{ modo() === 'compra' ? 'No disponible' : 'Sin entrada: no se vende' }}</span>
       }
@@ -95,6 +98,11 @@ import { coloresZonas, MesaPlano, PlanoSalon, ZonaPlano } from '../../../@core/m
         &.sel {
           background: var(--text);
           box-shadow: 0 0 0 2px var(--primary);
+        }
+
+        &.res {
+          background: #f5f5f4;
+          outline: 1.5px solid #d4a017;
         }
 
         &.ocu {
@@ -233,6 +241,16 @@ import { coloresZonas, MesaPlano, PlanoSalon, ZonaPlano } from '../../../@core/m
       cursor: pointer;
     }
 
+    .asiento.reservado rect {
+      fill: #f5f5f4;
+      stroke: #d4a017;
+      stroke-width: 1.5;
+    }
+
+    .asiento.reservado text {
+      fill: #1c1917;
+    }
+
     .numero {
       cursor: pointer;
       outline: none;
@@ -294,6 +312,10 @@ export class PlanoSalonComponent {
   ocupados = input<Record<string, string>>({});
   seleccion = input<string[]>([]);
   modo = input<'compra' | 'admin'>('compra');
+  /** Admin: puestos vendidos por fuera (se pintan aparte). */
+  porFuera = input<string[]>([]);
+  /** Admin: tocar un puesto lo marca o libera por fuera en vez de asignar la mesa. */
+  reservando = input(false);
 
   /** Puesto tocado ("5A"); solo en modo compra y si está libre o elegido. */
   asiento = output<string>();
@@ -336,7 +358,10 @@ export class PlanoSalonComponent {
     return idTicket ? (this.colores().get(idTicket) ?? null) : null;
   }
 
-  estadoAsiento(id: string, color: string | null): 'libre' | 'elegido' | 'ocupado' | 'sin-venta' {
+  private reservados = computed(() => new Set(this.porFuera()));
+
+  estadoAsiento(id: string, color: string | null): 'libre' | 'elegido' | 'ocupado' | 'sin-venta' | 'reservado' {
+    if (this.reservados().has(id)) return 'reservado';
     if (!color) return 'sin-venta';
     if (this.elegidos().has(id)) return 'elegido';
     if (this.ocupados()[id]) return 'ocupado';
@@ -350,7 +375,8 @@ export class PlanoSalonComponent {
       libre: zona ? `${zona.name} $${Number(zona.price)}` : '',
       elegido: 'elegido',
       ocupado: 'ocupado',
-      'sin-venta': 'sin vender'
+      'sin-venta': 'sin vender',
+      reservado: 'vendido por fuera'
     };
     return `Puesto ${id}, mesa ${m.mesa}: ${textos[estado]}`;
   }
@@ -396,7 +422,8 @@ export class PlanoSalonComponent {
   tocarAsiento(m: MesaPlano, id: string, estado: string) {
     if (this.trasArrastre) return;
     if (this.modo() === 'admin') {
-      this.mesa.emit(m.mesa);
+      if (this.reservando()) this.asiento.emit(id);
+      else this.mesa.emit(m.mesa);
     } else if (estado === 'libre' || estado === 'elegido') {
       this.asiento.emit(id);
     }

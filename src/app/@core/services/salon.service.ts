@@ -17,6 +17,12 @@ export class SalonService {
     return this.http.get<EstadoSalon>(`${this.api}/${idEvents}`);
   }
 
+  /** Marca (o libera) un puesto como vendido por fuera. */
+  porFuera(idEvents: number, asiento: string, vendido: boolean) {
+    const url = `${this.api}/${idEvents}/por-fuera/${encodeURIComponent(asiento)}`;
+    return vendido ? this.http.put<EstadoSalon>(url, {}) : this.http.delete<EstadoSalon>(url);
+  }
+
   guardarZonas(idEvents: number, zonas: { mesa: number; idTicket: number }[]) {
     return this.http.put<EstadoSalon>(`${this.api}/${idEvents}/zonas`, { zonas });
   }

@@ -28,6 +28,8 @@ export interface EstadoSalon {
   ocupados: Record<string, 'vendido' | 'apartado'>;
   /** Puestos que ya tengo apartados (al volver a esta pantalla). */
   mios: string[];
+  /** Puestos vendidos por fuera desde el mapa del admin (también en `ocupados`). */
+  porFuera: string[];
 }
 
 /** Una zona (tipo de entrada) para pintar el plano. */
