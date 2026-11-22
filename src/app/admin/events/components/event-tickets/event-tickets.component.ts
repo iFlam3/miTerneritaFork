@@ -131,14 +131,17 @@ export class EventTicketsComponent {
     effect(() => {
       const id = this.idEvents();
       if (!id) return;
-      // El backend responde 404 cuando el evento no tiene entradas.
-      this.ticketsService
-        .getTicktesByEvent(id)
-        .pipe(catchError(() => of([] as Ticket[])))
-        .subscribe(tickets => {
-          this.existentes.set(tickets);
-          this.sincronizar();
-        });
+      // El backend responde 404 cuando el evento no tiene entradas. untracked:
+      // el effect solo debe depender de idEvents, no de lo que lea la petición.
+      untracked(() =>
+        this.ticketsService
+          .getTicktesByEvent(id)
+          .pipe(catchError(() => of([] as Ticket[])))
+          .subscribe(tickets => {
+            this.existentes.set(tickets);
+            this.sincronizar();
+          })
+      );
     });
     effect(() => {
       this.category();

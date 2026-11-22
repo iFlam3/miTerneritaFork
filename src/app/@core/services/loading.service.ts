@@ -1,6 +1,6 @@
 import { DOCUMENT } from '@angular/common';
 import { HttpInterceptorFn } from '@angular/common/http';
-import { effect, inject, Injectable, signal } from '@angular/core';
+import { effect, inject, Injectable, signal, untracked } from '@angular/core';
 import { finalize } from 'rxjs';
 
 /**
@@ -27,7 +27,9 @@ export class LoadingService {
 export const loadingInterceptor: HttpInterceptorFn = (req, next) => {
   const loading = inject(LoadingService);
   const guarda = req.method !== 'GET' && req.method !== 'HEAD';
-  if (loading.pending() === 0) loading.desde.set(Date.now());
+  // untracked: una peticion lanzada dentro de un effect no debe suscribirlo a
+  // `pending`; si no, cada peticion vuelve a disparar el effect (bucle infinito).
+  if (untracked(loading.pending) === 0) loading.desde.set(Date.now());
   loading.pending.update(n => n + 1);
   if (guarda) loading.saving.update(n => n + 1);
   return next(req).pipe(
