@@ -27,7 +27,7 @@ import { PlanoSalonComponent } from '../../shared/components/plano-salon/plano-s
         <div class="catalog-head">
           <div class="title">
             <h1>Mapa de mesas</h1>
-            <p>Elige el evento y una entrada; luego toca las mesas que la venden (o arrastra el ratón para marcar varias). Tócala otra vez para quitarla; Alt + arrastrar quita varias. Las mesas sin entrada no se venden. Con «Vendida», cada puesto que toques queda vendido (o se libera) al instante.</p>
+            <p>Elige el evento y una entrada; luego toca las mesas que la venden (o arrastra el ratón para marcar varias). Tócala otra vez para quitarla; Alt + arrastrar quita varias. Las mesas sin entrada no se venden. Con «Vendida», cada puesto, mesa o arrastre que toques queda vendido al instante; tócalo otra vez (o Alt + arrastrar) para liberarlo.</p>
           </div>
           <div class="buttons">
             <label class="selector">
@@ -304,21 +304,41 @@ export class SalonComponent {
     });
   }
 
-  /**
-   * Con «Vendida»: marca o libera el puesto. Se ve al instante y se
-   * guarda después; si el servidor lo rechaza, vuelve a como estaba.
-   */
+  /** Con «Vendida»: un puesto se marca o se libera. */
   onAsiento(asiento: string) {
-    const idEvents = this.idEvento();
-    if (!idEvents) return;
-    const vendido = !this.porFuera().includes(asiento);
-    if (vendido && this.ocupados()[asiento]) {
+    if (!this.porFuera().includes(asiento) && this.ocupados()[asiento]) {
       this.messageService.add({ severity: 'warn', summary: 'Puesto ocupado', detail: `${asiento} ya está vendido o apartado por un cliente` });
       return;
     }
+    this.marcar([asiento], !this.porFuera().includes(asiento));
+  }
+
+  /** Puestos de esas mesas. */
+  private puestosDe(mesas: number[]): string[] {
+    const set = new Set(mesas);
+    return (this.plano()?.mesas ?? []).filter(m => set.has(m.mesa)).flatMap(m => m.asientos.map(([letra]) => `${m.mesa}${letra}`));
+  }
+
+  /**
+   * Mesa tocada o arrastre con «Vendida». Si ya estaban todos vendidos por
+   * fuera (o se arrastró con Alt), se liberan; si no, se venden los libres.
+   */
+  private marcarMesas(mesas: number[], quitar = false) {
+    const puestos = this.puestosDe(mesas);
+    const mios = new Set(this.porFuera());
+    const liberar = quitar || puestos.every(a => mios.has(a));
+    const cambian = liberar ? puestos.filter(a => mios.has(a)) : puestos.filter(a => !mios.has(a) && !this.ocupados()[a]);
+    if (cambian.length) this.marcar(cambian, !liberar);
+  }
+
+  /** Se ve al instante y se guarda después; si el servidor lo rechaza, vuelve a como estaba. */
+  private marcar(asientos: string[], vendido: boolean) {
+    const idEvents = this.idEvento();
+    if (!idEvents) return;
     const antes = { porFuera: this.porFuera(), ocupados: this.ocupados() };
-    this.porFuera.update(p => (vendido ? [...p, asiento] : p.filter(a => a !== asiento)));
-    this.salonService.porFuera(idEvents, asiento, vendido).subscribe({
+    const set = new Set(asientos);
+    this.porFuera.update(p => (vendido ? [...new Set([...p, ...asientos])] : p.filter(a => !set.has(a))));
+    this.salonService.porFuera(idEvents, asientos, vendido).subscribe({
       next: estado => {
         if (this.idEvento() !== idEvents) return;
         this.ocupados.set(estado.ocupados);
@@ -327,7 +347,7 @@ export class SalonComponent {
       error: err => {
         this.porFuera.set(antes.porFuera);
         this.ocupados.set(antes.ocupados);
-        this.messageService.add({ severity: 'error', summary: 'No se guardó', detail: err?.error?.message ?? `No se pudo cambiar ${asiento}` });
+        this.messageService.add({ severity: 'error', summary: 'No se guardó', detail: err?.error?.message ?? 'No se pudieron cambiar los puestos' });
       }
     });
   }
@@ -335,7 +355,8 @@ export class SalonComponent {
   /** Asigna la entrada elegida a la mesa; si ya la tenía, la quita. */
   onMesa(mesa: number) {
     const idTicket = this.pincel();
-    if (!idTicket || idTicket === this.POR_FUERA) return;
+    if (idTicket === this.POR_FUERA) return this.marcarMesas([mesa]);
+    if (!idTicket) return;
     this.zonas.update(z => {
       const { [mesa]: actual, ...resto } = z;
       return actual === idTicket ? resto : { ...resto, [mesa]: idTicket };
@@ -345,7 +366,7 @@ export class SalonComponent {
   /** Rectángulo arrastrado en el plano: asigna la entrada elegida a esas mesas, o las quita (Alt). */
   onMesas({ mesas, quitar }: { mesas: number[]; quitar: boolean }) {
     const idTicket = this.pincel();
-    if (idTicket === this.POR_FUERA) return;
+    if (idTicket === this.POR_FUERA) return this.marcarMesas(mesas, quitar);
     if (!idTicket && !quitar) return;
     this.zonas.update(z => {
       const nuevo = { ...z };
