@@ -5,7 +5,9 @@
         <p class="tm-lead">Buscamos gente con buena energía para nuestras noches.@if (puestos()?.length) { Elige uno de los puestos abiertos, déjanos tus datos y te contactamos.}</p>
     </header>
 
-    @if (puestos()?.length === 0) {
+    @if (puestos() === null) {
+        <app-loader [isLoading]="true" [rows]="4" />
+    } @else if (puestos()?.length === 0) {
         <section class="tm-card tm-card--pad empleo-ok" appReveal>
             <h2>Por ahora no tenemos vacantes</h2>
             <p class="tm-muted">Vuelve pronto: publicamos aquí cuando busquemos personal.</p>

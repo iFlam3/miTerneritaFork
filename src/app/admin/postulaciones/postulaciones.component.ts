@@ -1,3 +1,4 @@
+import { LoaderComponent } from '../../@core/components/loader/loader.component';
 import { DatePipe } from '@angular/common';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -11,7 +12,7 @@ import { ConfirmDeleteModalComponent } from '../../shared/components/confirm-del
 
 @Component({
   selector: 'app-postulaciones',
-  imports: [DatePipe, FormsModule, SelectModule, TableModule],
+  imports: [LoaderComponent, DatePipe, FormsModule, SelectModule, TableModule],
   templateUrl: './postulaciones.component.html',
   styleUrl: './postulaciones.component.scss'
 })

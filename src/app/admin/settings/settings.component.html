@@ -4,6 +4,9 @@
         <p>Datos del sitio y cuentas donde los clientes te pagan.</p>
     </div>
 
+    @if (cargando()) {
+    <app-loader [isLoading]="true" [rows]="6" />
+    } @else {
     <!-- ================= GENERAL ================= -->
     <form class="table bloque" [formGroup]="general" (ngSubmit)="guardar('general')" novalidate>
         <header class="bloque-head">
@@ -119,4 +122,5 @@
             </button>
         </div>
     </form>
+}
 </div>

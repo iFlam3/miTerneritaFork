@@ -49,13 +49,15 @@ export class EditUserComponent implements OnInit {
   rol = this.user.roleName;
 
   cambiarRol(role: string) {
+    const anterior = this.user.roleName;
+    this.user.roleName = role;
     this.userService.updateRole(this.user.id, role).subscribe({
       next: () => {
-        this.user.roleName = role;
         this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Rol actualizado correctamente' });
       },
       error: (err) => {
-        this.rol = this.user.roleName; // vuelve el select al rol real
+        this.user.roleName = anterior;
+        this.rol = anterior; // vuelve el select al rol real
         this.messageService.add({ severity: 'error', summary: 'Error', detail: err?.error?.message || 'Error al cambiar el rol' });
       }
     });

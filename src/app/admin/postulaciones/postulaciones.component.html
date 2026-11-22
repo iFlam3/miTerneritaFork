@@ -37,7 +37,8 @@
             }
         </div>
 
-        <p-table [(selection)]="seleccion" [selectionPageOnly]="true" [value]="visibles()" [rows]="10" [paginator]="visibles().length > 10" [loading]="cargando()" dataKey="idPostulacion">
+        <app-loader [isLoading]="cargando()" />
+        <p-table [hidden]="cargando()" [(selection)]="seleccion" [selectionPageOnly]="true" [value]="visibles()" [rows]="10" [paginator]="visibles().length > 10" dataKey="idPostulacion">
             <ng-template pTemplate="header">
                 <tr>
                     <th class="sel"><p-tableHeaderCheckbox /></th>

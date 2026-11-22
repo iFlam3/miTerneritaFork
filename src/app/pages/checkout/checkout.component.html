@@ -88,9 +88,12 @@
                 <div class="summary-event">
                     <img src="{{ flyer() }}" alt="" />
                     <div>
-                        <strong>{{ event()?.name }}</strong>
                         @if (event()) {
+                            <strong>{{ event()?.name }}</strong>
                             <small>{{ day() | date: "EEE d 'de' MMM" | capFirst }} · {{ time() }}</small>
+                        } @else {
+                            <span class="tm-skeleton sk-linea" style="width: 70%"></span>
+                            <span class="tm-skeleton sk-linea" style="width: 45%"></span>
                         }
                     </div>
                 </div>

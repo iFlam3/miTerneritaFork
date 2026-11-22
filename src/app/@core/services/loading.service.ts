@@ -15,6 +15,8 @@ export class LoadingService {
   readonly pending = signal(0);
   /** Solo las que guardan: POST, PUT, PATCH, DELETE. */
   readonly saving = signal(0);
+  /** Momento (ms) en que empezo la racha actual de peticiones; null si no hay. */
+  readonly desde = signal<number | null>(null);
 
   constructor() {
     const html = inject(DOCUMENT).documentElement;
@@ -25,11 +27,13 @@ export class LoadingService {
 export const loadingInterceptor: HttpInterceptorFn = (req, next) => {
   const loading = inject(LoadingService);
   const guarda = req.method !== 'GET' && req.method !== 'HEAD';
+  if (loading.pending() === 0) loading.desde.set(Date.now());
   loading.pending.update(n => n + 1);
   if (guarda) loading.saving.update(n => n + 1);
   return next(req).pipe(
     finalize(() => {
       loading.pending.update(n => n - 1);
+      if (loading.pending() === 0) loading.desde.set(null);
       if (guarda) loading.saving.update(n => n - 1);
     })
   );

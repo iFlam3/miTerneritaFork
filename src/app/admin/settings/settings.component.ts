@@ -1,3 +1,4 @@
+import { LoaderComponent } from '../../@core/components/loader/loader.component';
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MessageService } from 'primeng/api';
@@ -11,7 +12,7 @@ type Seccion = 'general' | 'pagos';
 /** Configuración del sitio: datos generales y cuentas que reciben los pagos. */
 @Component({
   selector: 'app-settings',
-  imports: [ReactiveFormsModule, InputText, SelectModule],
+  imports: [ReactiveFormsModule, InputText, SelectModule, LoaderComponent],
   templateUrl: './settings.component.html',
   styleUrl: './settings.component.scss'
 })
@@ -42,10 +43,16 @@ export class SettingsComponent implements OnInit {
     zelleCorreo: ['', Validators.email]
   });
 
+  cargando = signal(true);
+
   ngOnInit() {
-    this.settingsService.getSettings().subscribe(settings => {
-      this.general.patchValue(settings as never);
-      this.pagos.patchValue(settings as never);
+    this.settingsService.getSettings().subscribe({
+      next: settings => {
+        this.general.patchValue(settings as never);
+        this.pagos.patchValue(settings as never);
+        this.cargando.set(false);
+      },
+      error: () => this.cargando.set(false)
     });
   }
 

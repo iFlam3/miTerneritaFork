@@ -9,8 +9,21 @@
     } @else if (navigating() || fetching()) {
         <div class="route-progress" role="progressbar" aria-label="Cargando"></div>
     }
+    @if (lento()) {
+        <div class="lento" role="status" aria-live="polite">
+            <div class="lento-texto">
+                <strong>Cargando… {{ lento() }} s</strong>
+                <span>{{ restante() }}</span>
+            </div>
+            <div class="lento-barra" role="progressbar" aria-label="Progreso de carga" [attr.aria-valuenow]="progreso() | number: '1.0-0'" aria-valuemin="0" aria-valuemax="100">
+                <span [style.width.%]="progreso()"></span>
+            </div>
+        </div>
+    }
 } @else if (isLoading) {
     <div class="inline-loader" role="status" aria-label="Cargando">
-        <span class="spinner"></span>
+        @for (f of filas; track f) {
+            <div class="tm-skeleton sk-fila"></div>
+        }
     </div>
 }

@@ -598,8 +598,18 @@
 .tm-skeleton {
   background: linear-gradient(90deg, var(--surface-2) 25%, var(--surface-3) 37%, var(--surface-2) 63%);
   background-size: 400% 100%;
-  animation: tm-shimmer 1.4s ease infinite;
+  // Invisible el primer segundo: una carga rapida no muestra nada. Ocupa su
+  // espacio desde el inicio, asi el contenido no salta al aparecer.
+  animation:
+    tm-skeleton-in 0.2s ease 1s both,
+    tm-shimmer 1.4s ease infinite;
   border-radius: var(--radius-lg);
+}
+
+@keyframes tm-skeleton-in {
+  from {
+    opacity: 0;
+  }
 }
 
 @keyframes tm-shimmer {

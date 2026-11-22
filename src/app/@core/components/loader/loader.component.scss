@@ -40,6 +40,8 @@
   height: 3px;
   overflow: hidden;
   background: transparent;
+  // Navegaciones de menos de 1 s no muestran la barra.
+  animation: aparecer 0.2s ease 1s both;
 
   &::after {
     content: '';
@@ -51,21 +53,6 @@
     box-shadow: 0 0 12px var(--primary-glow);
     animation: progress 1s var(--ease-in-out) infinite;
   }
-}
-
-.inline-loader {
-  display: grid;
-  place-items: center;
-  padding: 64px 0;
-}
-
-.spinner {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  border: 3px solid var(--border);
-  border-top-color: var(--primary);
-  animation: spin 0.8s linear infinite;
 }
 
 @keyframes spin {
@@ -91,6 +78,67 @@
 }
 
 @keyframes splash-out {
+  from {
+    opacity: 0;
+  }
+}
+
+// Esqueleto en línea (tablas/listas). .tm-skeleton ya espera 1 s antes de verse.
+.inline-loader {
+  display: grid;
+  place-items: stretch;
+  gap: 10px;
+  padding: 8px 0;
+}
+
+.sk-fila {
+  height: 52px;
+}
+
+// Aviso de más de 10 s: progreso estimado y tiempo restante.
+.lento {
+  position: fixed;
+  left: 50%;
+  bottom: 20px;
+  z-index: 3000;
+  transform: translateX(-50%);
+  width: min(360px, calc(100vw - 32px));
+  display: grid;
+  gap: 8px;
+  padding: 12px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface-2);
+  box-shadow: 0 10px 30px rgb(0 0 0 / 35%);
+  animation: splash-out 0.25s var(--ease-out) both;
+}
+
+.lento-texto {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 0.875rem;
+
+  span {
+    color: var(--text-muted);
+  }
+}
+
+.lento-barra {
+  height: 4px;
+  border-radius: 999px;
+  background: var(--surface-3);
+  overflow: hidden;
+
+  span {
+    display: block;
+    height: 100%;
+    background: var(--primary);
+    transition: width 1s linear;
+  }
+}
+
+@keyframes aparecer {
   from {
     opacity: 0;
   }

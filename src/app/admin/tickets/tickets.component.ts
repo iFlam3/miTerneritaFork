@@ -1,5 +1,5 @@
 import { DatePipe, DecimalPipe } from '@angular/common';
-import { Component, computed, ElementRef, inject, signal, viewChild } from '@angular/core';
+import { Component, computed, ElementRef, inject, linkedSignal, signal, viewChild } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -51,13 +51,15 @@ export class TicketsComponent {
   private messageService = inject(MessageService);
   ref: DynamicDialogRef | undefined;
 
-  private tickets = toSignal(
+  private servidor = toSignal(
     this.ticketsService.refreshTicketsObservable$.pipe(
       startWith(null),
       switchMap(() => this.ticketsService.getTickets())
     ),
     { initialValue: null }
   );
+  /** Copia local: un toque la cambia al instante; cada recarga del servidor la reemplaza. */
+  private tickets = linkedSignal(() => this.servidor());
   private eventos = toSignal(this.eventsService.getEvents(), { initialValue: [] as Event[] });
 
   busqueda = signal('');
@@ -121,9 +123,14 @@ export class TicketsComponent {
   }
 
   private actualizarGrupo(grupo: Grupo, cambios: Partial<Pick<Ticket, 'name' | 'status'>>, ok: string) {
+    const ids = new Set(grupo.filas.map(f => f.ticket.idTicket));
+    this.tickets.update(ts => ts?.map(t => (ids.has(t.idTicket) ? { ...t, ...cambios } : t)) ?? ts);
     forkJoin(grupo.filas.map(f => this.ticketsService.updateTicket(f.ticket.idTicket, cambios))).subscribe({
       next: () => this.messageService.add({ severity: 'success', summary: 'Entradas', detail: ok }),
-      error: err => this.messageService.add({ severity: 'error', summary: 'Entradas', detail: err?.error?.message ?? 'No se pudieron actualizar' })
+      error: err => {
+        this.tickets.set(this.servidor()); // vuelve a lo que dice el servidor
+        this.messageService.add({ severity: 'error', summary: 'Entradas', detail: err?.error?.message ?? 'No se pudieron actualizar' });
+      }
     });
   }
 
