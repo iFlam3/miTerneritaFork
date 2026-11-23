@@ -1,5 +1,5 @@
 import { DOCUMENT } from '@angular/common';
-import { Component, effect, HostListener, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, effect, HostListener, inject, OnInit, signal } from '@angular/core';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { filter } from 'rxjs';
 import { AuthService } from '../services/auth.service';
@@ -18,7 +18,15 @@ interface RouteGroup {
   items: RouteLayout[];
 }
 
+/** Antes solo se guardaba si estaba contraído; se lee para no perder la preferencia. */
 const COLLAPSE_KEY = 'tm-admin-collapsed';
+const ANCHO_KEY = 'tm-admin-side-w';
+/** Solo iconos. */
+const ANCHO_MIN = 84;
+const ANCHO_MAX = 264;
+/** Por debajo de este ancho se ven solo los iconos; al soltar se ajusta al mínimo. */
+const ANCHO_ICONOS = 160;
+const PASO_TECLADO = 16;
 
 @Component({
   selector: 'app-admin-layout',
@@ -44,7 +52,14 @@ export class AdminLayoutComponent implements OnInit {
   readonly year = new Date().getFullYear();
 
   mobileOpen = signal(false);
-  collapsed = signal(this.readCollapsed());
+  readonly anchoMin = ANCHO_MIN;
+  readonly anchoMax = ANCHO_MAX;
+  /** Ancho de la barra lateral en escritorio; se arrastra desde su borde derecho. */
+  ancho = signal(this.leerAncho());
+  collapsed = computed(() => this.ancho() <= ANCHO_ICONOS);
+  redimensionando = signal(false);
+  /** Último ancho con texto: el botón de menú vuelve a él al expandir. */
+  private anchoAbierto = this.ancho() > ANCHO_ICONOS ? this.ancho() : ANCHO_MAX;
   seed = '?';
 
   readonly groups: RouteGroup[] = [
@@ -81,7 +96,7 @@ export class AdminLayoutComponent implements OnInit {
   constructor() {
     effect(() => {
       try {
-        localStorage.setItem(COLLAPSE_KEY, this.collapsed() ? '1' : '0');
+        localStorage.setItem(ANCHO_KEY, String(this.ancho()));
       } catch {}
     });
     effect(() => this.document.body.classList.toggle('tm-no-scroll', this.mobileOpen()));
@@ -109,8 +124,49 @@ export class AdminLayoutComponent implements OnInit {
     if (this.document.defaultView && this.document.defaultView.innerWidth < 1024) {
       this.mobileOpen.set(!this.mobileOpen());
     } else {
-      this.collapsed.set(!this.collapsed());
+      this.fijarAncho(this.collapsed() ? this.anchoAbierto : ANCHO_MIN);
     }
+  }
+
+  empezarResize(e: PointerEvent) {
+    if (e.button !== 0) return;
+    e.preventDefault();
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    this.redimensionando.set(true);
+  }
+
+  /** La barra empieza en x = 0: la posición del puntero es el ancho. */
+  moverResize(e: PointerEvent) {
+    if (this.redimensionando()) this.ancho.set(this.limitar(e.clientX));
+  }
+
+  soltarResize() {
+    if (!this.redimensionando()) return;
+    this.redimensionando.set(false);
+    this.fijarAncho(this.ancho());
+  }
+
+  teclaResize(e: KeyboardEvent) {
+    const destino: Record<string, number> = {
+      ArrowLeft: this.ancho() - PASO_TECLADO,
+      ArrowRight: this.ancho() + PASO_TECLADO,
+      Home: ANCHO_MIN,
+      End: ANCHO_MAX
+    };
+    if (!(e.key in destino)) return;
+    e.preventDefault();
+    this.fijarAncho(destino[e.key]);
+  }
+
+  /** Entre el mínimo y el umbral de iconos no hay término medio: se queda en solo iconos. */
+  private fijarAncho(px: number) {
+    const ancho = this.limitar(px);
+    this.ancho.set(ancho <= ANCHO_ICONOS ? ANCHO_MIN : ancho);
+    if (ancho > ANCHO_ICONOS) this.anchoAbierto = ancho;
+  }
+
+  private limitar(px: number) {
+    return Math.round(Math.min(ANCHO_MAX, Math.max(ANCHO_MIN, px)));
   }
 
   logOut() {
@@ -118,11 +174,13 @@ export class AdminLayoutComponent implements OnInit {
     this.router.navigateByUrl("/login");
   }
 
-  private readCollapsed() {
+  private leerAncho() {
     try {
-      return localStorage.getItem(COLLAPSE_KEY) === '1';
+      const guardado = Number(localStorage.getItem(ANCHO_KEY));
+      if (guardado) return this.limitar(guardado);
+      return localStorage.getItem(COLLAPSE_KEY) === '1' ? ANCHO_MIN : ANCHO_MAX;
     } catch {
-      return false;
+      return ANCHO_MAX;
     }
   }
 }

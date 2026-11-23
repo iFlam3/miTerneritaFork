@@ -9,8 +9,43 @@
   background: var(--bg);
 }
 
-.shell.is-collapsed {
-  --side-w: 84px;
+// Mientras se arrastra el borde: sin transiciones para que siga al puntero.
+.shell.is-resizing {
+  cursor: col-resize;
+  user-select: none;
+
+  .sidebar,
+  .main {
+    transition: none;
+  }
+}
+
+.resizer {
+  position: absolute;
+  inset: 0 -5px 0 auto;
+  z-index: 1;
+  width: 10px;
+  cursor: col-resize;
+  touch-action: none;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0 auto 0 4px;
+    width: 2px;
+    background: transparent;
+    transition: background-color var(--dur) var(--ease-out);
+  }
+
+  &:hover::after,
+  &:focus-visible::after,
+  .is-resizing &::after {
+    background: var(--primary);
+  }
+
+  &:focus-visible {
+    outline: none;
+  }
 }
 
 // ================= Sidebar =================
@@ -24,9 +59,10 @@
   padding: 18px 14px;
   border-right: 1px solid var(--border);
   background: var(--bg-soft);
+  // Rápida: cada fotograma vuelve a maquetar el contenido (y los gráficos) al cambiar el ancho.
   transition:
-    width var(--dur-slow) var(--ease-out),
-    transform var(--dur-slow) var(--ease-out);
+    width 220ms var(--ease-out),
+    transform 260ms var(--ease-out);
 }
 
 .side-top {
@@ -52,9 +88,16 @@
     width: 40px;
   }
 
+  .side-label {
+    min-width: 0;
+    overflow: hidden;
+  }
+
   strong,
   small {
     display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
     white-space: nowrap;
   }
 
@@ -86,6 +129,8 @@
   letter-spacing: 0.14em;
   text-transform: uppercase;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .side-link {
@@ -110,6 +155,13 @@
   transition:
     background-color var(--dur) var(--ease-out),
     color var(--dur) var(--ease-out);
+
+  // Con la barra estrecha el texto se corta con "…" en vez de salirse.
+  .side-label {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 
   .pi {
     flex-shrink: 0;
@@ -204,7 +256,7 @@
   min-height: 100vh;
   min-height: 100dvh;
   margin-left: var(--side-w);
-  transition: margin-left var(--dur-slow) var(--ease-out);
+  transition: margin-left 220ms var(--ease-out);
 }
 
 .topbar {
@@ -321,12 +373,9 @@
 
 // ================= Responsive =================
 @media (max-width: 1023px) {
-  :host,
-  .shell.is-collapsed {
-    --side-w: 280px;
-  }
-
+  // En móvil la barra es un cajón de ancho fijo; el ancho elegido en escritorio no aplica.
   .sidebar {
+    width: 280px;
     transform: translateX(-100%);
     box-shadow: var(--shadow-lg);
   }
@@ -363,6 +412,10 @@
 
   .close-mobile {
     display: inline-grid;
+  }
+
+  .resizer {
+    display: none;
   }
 
   .scrim {

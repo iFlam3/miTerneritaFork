@@ -1,0 +1,152 @@
+// Estilo "liquid glass" del dashboard (idea de liquid.md) con los colores de la marca:
+// vidrio esmerilado con brillo y bordes con luz sobre una foto del local (la barra).
+// Azul, verde, ámbar y rojo son los de la app (_tokens.scss): aquí no se cambian.
+// Los colores van en rgba()/hex: los gráficos (Chart.js) los leen con getComputedStyle.
+
+$foto: url('/assets/img/optimized/zona3.webp');
+
+@mixin tokens {
+  // Oscuro (por defecto): vidrio neutro, como el resto del panel.
+  --lq-ink: #f5f2ec;
+  --lq-muted: rgba(245, 242, 236, 0.72);
+  --lq-line: rgba(255, 255, 255, 0.1);
+  --lq-rim: rgba(255, 255, 255, 0.16);
+  --lq-edge-light: rgba(255, 255, 255, 0.26);
+  --lq-edge-shade: rgba(0, 0, 0, 0.45);
+  --lq-gloss: rgba(255, 255, 255, 0.07);
+  --lq-card: rgba(17, 17, 22, 0.72);
+  --lq-card-light: rgba(255, 255, 255, 0.07);
+  --lq-raised: rgba(38, 38, 48, 0.82);
+  --lq-inner: rgba(255, 255, 255, 0.05);
+  --lq-solid: #15151a;
+  --lq-shadow: 0 0 0;
+  // Foto oscurecida con un brillo azul de la marca arriba a la izquierda.
+  --lq-scene:
+    radial-gradient(55% 45% at 10% 0%, rgba(91, 124, 255, 0.18), transparent 70%),
+    linear-gradient(180deg, rgba(10, 10, 12, 0.72), rgba(10, 10, 12, 0.9) 60%, rgba(10, 10, 12, 0.96));
+
+  // Botones y selección: el azul de la marca.
+  --lq-primary: var(--primary);
+  --lq-primary-ink: var(--primary-contrast);
+
+  // Textos y superficies de la app reasignados al vidrio (tablas, insignias, gráficos).
+  --text: var(--lq-ink);
+  --text-muted: var(--lq-muted);
+  --text-subtle: rgba(245, 242, 236, 0.55);
+  --border: var(--lq-line);
+  --border-strong: var(--lq-rim);
+  --surface: var(--lq-solid);
+  --surface-2: var(--lq-inner);
+  --surface-3: var(--lq-raised);
+
+  // Sin transparencias si el sistema lo pide: tarjetas opacas.
+  @media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
+    --lq-card: var(--lq-solid);
+    --lq-card-light: transparent;
+  }
+}
+
+/** Tema claro (crema y ocre claro de la web): se incluye en :host-context([data-theme='light']). */
+@mixin tokens-light {
+  --lq-ink: #16151a;
+  --lq-muted: #57544e;
+  --lq-line: rgba(22, 21, 26, 0.09);
+  --lq-rim: rgba(255, 255, 255, 0.72);
+  --lq-edge-light: rgba(255, 255, 255, 0.92);
+  --lq-edge-shade: rgba(30, 25, 15, 0.1);
+  --lq-gloss: rgba(255, 255, 255, 0.5);
+  --lq-card: rgba(255, 253, 249, 0.62);
+  --lq-card-light: rgba(255, 255, 255, 0.5);
+  --lq-raised: rgba(255, 255, 255, 0.88);
+  --lq-inner: rgba(246, 244, 239, 0.6);
+  --lq-solid: #ffffff;
+  --lq-shadow: 30 25 15;
+  // La misma foto lavada en crema; como mucho un ocre claro.
+  --lq-scene:
+    radial-gradient(55% 45% at 10% 0%, rgba(239, 231, 212, 0.7), transparent 70%),
+    radial-gradient(50% 50% at 95% 100%, rgba(226, 205, 160, 0.35), transparent 70%),
+    linear-gradient(180deg, rgba(246, 244, 239, 0.74), rgba(239, 236, 229, 0.9) 60%, rgba(239, 236, 229, 0.95));
+  --text-subtle: #8a867f;
+}
+
+/**
+ * Fondo del escenario: brillo de vidrio + velo del tema + foto desenfocada.
+ * La foto se desenfoca una vez en su propia capa (::before) y los paneles no usan
+ * backdrop-filter: desenfocar en vivo cada panel hacía muy pesado el scroll.
+ */
+@mixin scene {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background: linear-gradient(148deg, var(--lq-gloss), transparent 19% 77%, var(--lq-gloss));
+
+  &::before {
+    content: '';
+    position: absolute;
+    // Más grande que el marco: el desenfoque aclara los bordes de la foto.
+    inset: -40px;
+    z-index: -1;
+    // Anclada arriba a todo el ancho: el dashboard es alto y con cover la foto salía muy ampliada.
+    background: var(--lq-scene), $foto top center / 100% auto no-repeat, var(--bg);
+    filter: blur(14px) saturate(1.3);
+    pointer-events: none;
+  }
+}
+
+/** Tarjeta de vidrio: paneles e indicadores. */
+@mixin glass($radius: 20px) {
+  border: 1px solid var(--lq-rim);
+  border-radius: $radius;
+  background: linear-gradient(144deg, var(--lq-card-light), transparent 66%), var(--lq-card);
+  box-shadow:
+    inset 0 1px 1px var(--lq-edge-light),
+    inset 0 -1px 1px var(--lq-edge-shade),
+    0 6px 18px rgb(var(--lq-shadow) / 14%);
+}
+
+/** Interior hundido dentro de una tarjeta (filas, pastillas). */
+@mixin inset {
+  border: 1px solid var(--lq-line);
+  background: var(--lq-inner);
+  box-shadow: inset 0 1px 0 var(--lq-gloss);
+}
+
+/** Selector de período (p-selectButton) como pastilla con la opción activa en azul. */
+@mixin pill-select {
+  ::ng-deep .p-selectbutton {
+    display: inline-flex;
+    gap: 2px;
+    padding: 3px;
+    border: 1px solid var(--lq-rim);
+    border-radius: 999px;
+    background: var(--lq-inner);
+    box-shadow: inset 0 1px 0 var(--lq-gloss);
+
+    .p-togglebutton {
+      min-height: 34px;
+      padding: 0 12px;
+      border: 0;
+      border-radius: 999px !important;
+      background: transparent;
+      color: var(--lq-ink);
+      font-size: 0.8rem;
+      font-weight: 750;
+
+      &:not(.p-togglebutton-checked):hover {
+        background: var(--lq-inner);
+      }
+
+      &::before,
+      .p-togglebutton-content {
+        background: transparent !important;
+        box-shadow: none !important;
+        color: inherit !important;
+      }
+    }
+
+    .p-togglebutton-checked {
+      background: var(--lq-primary);
+      color: var(--lq-primary-ink);
+    }
+  }
+}

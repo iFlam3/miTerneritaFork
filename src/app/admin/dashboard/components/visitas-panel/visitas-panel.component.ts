@@ -1,5 +1,5 @@
 import { DecimalPipe } from '@angular/common';
-import { Component, computed, DestroyRef, inject, signal } from '@angular/core';
+import { Component, computed, DestroyRef, ElementRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -50,6 +50,7 @@ export function duracion(seg: number | null | undefined): string {
 export class VisitasPanelComponent {
   private visitasService = inject(VisitasService);
   private theme = inject(ThemeService);
+  private host = inject<ElementRef<HTMLElement>>(ElementRef);
 
   readonly rangos = [
     { label: 'Hoy', value: 1 },
@@ -126,7 +127,8 @@ export class VisitasPanelComponent {
   // ---------- Gráficos ----------
   private paleta = computed(() => {
     this.theme.theme(); // recalcula al cambiar de tema
-    const css = getComputedStyle(document.documentElement);
+    // Del propio panel: hereda los colores del estilo liquid del dashboard.
+    const css = getComputedStyle(this.host.nativeElement);
     const v = (n: string) => css.getPropertyValue(n).trim();
     return { text: v('--text-muted'), grid: v('--border'), primary: v('--primary'), success: v('--success'), warning: v('--warning'), surface: v('--surface'), muted: v('--border-strong') };
   });

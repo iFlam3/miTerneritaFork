@@ -1,4 +1,4 @@
-<div class="shell" [class.is-collapsed]="collapsed()" [class.is-mobile-open]="mobileOpen()">
+<div class="shell" [class.is-collapsed]="collapsed()" [class.is-mobile-open]="mobileOpen()" [class.is-resizing]="redimensionando()" [style.--side-w]="ancho() + 'px'">
     <aside class="sidebar tm-vt-sidebar" aria-label="Menú del panel">
         <div class="side-top">
             <a routerLink="/admin/dashboard" class="side-brand">
@@ -39,6 +39,24 @@
                 <span class="side-label">Cerrar sesión</span>
             </button>
         </div>
+
+        <!-- Borde arrastrable: ajusta el ancho del menú (mínimo: solo iconos). Doble clic contrae o expande. -->
+        <div
+            class="resizer"
+            role="separator"
+            tabindex="0"
+            aria-orientation="vertical"
+            aria-label="Ancho del menú"
+            [attr.aria-valuemin]="anchoMin"
+            [attr.aria-valuemax]="anchoMax"
+            [attr.aria-valuenow]="ancho()"
+            (pointerdown)="empezarResize($event)"
+            (pointermove)="moverResize($event)"
+            (pointerup)="soltarResize()"
+            (pointercancel)="soltarResize()"
+            (dblclick)="toggleSidebar()"
+            (keydown)="teclaResize($event)"
+        ></div>
     </aside>
 
     <div class="scrim" (click)="mobileOpen.set(false)"></div>

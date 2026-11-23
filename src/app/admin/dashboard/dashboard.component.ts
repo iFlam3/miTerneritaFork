@@ -1,7 +1,7 @@
 import { DatePipe, DecimalPipe } from '@angular/common';
 import { MessageService } from 'primeng/api';
 import { TasaService } from '../../@core/services/tasa.service';
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, ElementRef, inject, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ChartModule } from 'primeng/chart';
@@ -39,6 +39,7 @@ export class DashboardComponent implements OnInit {
   private eventsService = inject(EventsService);
   private dialogService = inject(DialogService);
   private theme = inject(ThemeService);
+  private host = inject<ElementRef<HTMLElement>>(ElementRef);
   private messageService = inject(MessageService);
   readonly tasa = inject(TasaService);
   ref: DynamicDialogRef | undefined;
@@ -123,7 +124,8 @@ export class DashboardComponent implements OnInit {
   // ---------- Colores según el tema ----------
   private palette = computed(() => {
     this.theme.theme(); // dependencia: recalcula al cambiar de tema
-    const css = getComputedStyle(document.documentElement);
+    // Del propio dashboard: ahí están los colores del estilo liquid.
+    const css = getComputedStyle(this.host.nativeElement);
     const v = (name: string) => css.getPropertyValue(name).trim();
     return {
       text: v('--text-muted'),
