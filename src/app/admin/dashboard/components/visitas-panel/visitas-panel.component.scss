@@ -205,12 +205,16 @@
 // ---------- Dispositivos ----------
 .dona {
   display: grid;
+  // Sin minmax(0, …) el canvas de Chart.js crece en bucle y se sale de la tarjeta.
+  grid-template-columns: minmax(0, 1fr);
   gap: 1rem;
 }
 
 .dona-chart {
   position: relative;
+  min-width: 0;
   height: 200px;
+  overflow: hidden;
 
   p-chart {
     display: block;
