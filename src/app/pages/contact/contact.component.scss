@@ -142,3 +142,72 @@
     grid-template-columns: 1fr;
   }
 }
+
+// Horario del local: un día por fila, hoy resaltado.
+.horario-card {
+  display: grid;
+  gap: 0.75rem;
+  padding: 16px 18px;
+
+  // La cabecera reusa .map-info, que trae su propio relleno.
+  .map-info {
+    padding: 0;
+  }
+}
+
+.horario {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.4rem 0.6rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.92rem;
+
+    span {
+      color: var(--text-muted);
+    }
+
+    strong {
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    em {
+      margin-left: 0.4rem;
+      padding: 1px 6px;
+      border-radius: 99px;
+      background: var(--primary-soft);
+      color: var(--primary);
+      font-size: 0.72rem;
+      font-style: normal;
+      font-weight: 700;
+    }
+
+    &.hoy {
+      background: var(--surface-2);
+
+      span {
+        color: var(--text);
+        font-weight: 700;
+      }
+    }
+  }
+
+  .cerrado {
+    color: var(--text-subtle);
+    font-weight: 600;
+  }
+}
+
+.horario-nota {
+  margin: 0;
+  color: var(--text-subtle);
+  font-size: 0.8rem;
+}

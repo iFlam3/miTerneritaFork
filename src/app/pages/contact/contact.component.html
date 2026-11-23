@@ -65,6 +65,22 @@
                 </a>
             }
 
+            <section class="tm-card horario-card" aria-labelledby="horario-titulo" appReveal [revealDelay]="230">
+                <div class="map-info">
+                    <span class="channel-icon"><i class="pi pi-clock"></i></span>
+                    <span><small>Para visitarnos</small><strong id="horario-titulo">Horario del local</strong></span>
+                </div>
+                <ul class="horario">
+                    @for (d of horario(); track $index) {
+                        <li [class.hoy]="$index === hoy">
+                            <span>{{ dias[$index] }}@if ($index === hoy) { <em>Hoy</em> }</span>
+                            <strong [class.cerrado]="d.cerrado">{{ textoDia(d) }}</strong>
+                        </li>
+                    }
+                </ul>
+                <p class="horario-nota">Las entradas se compran en la web a cualquier hora.</p>
+            </section>
+
             <div class="tm-card map-card" appReveal [revealDelay]="240">
                 <div class="map-info">
                     <span class="channel-icon"><i class="pi pi-map-marker"></i></span>

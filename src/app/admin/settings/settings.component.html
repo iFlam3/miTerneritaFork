@@ -53,6 +53,45 @@
         </div>
     </form>
 
+    <!-- ================= HORARIO ================= -->
+    <!-- div y no form: el horario es una lista de días (FormArray), sin [formGroup] el form recargaba la página -->
+    <section class="table bloque" aria-labelledby="horario-titulo">
+        <header class="bloque-head">
+            <span class="icono"><i class="pi pi-clock"></i></span>
+            <div>
+                <h2 id="horario-titulo">Horario del local</h2>
+                <p>Cuándo pueden ir al local. Sale en el pie de página, en Contacto y en Google. La web vende entradas a cualquier hora.</p>
+            </div>
+        </header>
+
+        <div class="horario">
+            @for (dia of horario.controls; track $index) {
+                <div class="horario-dia" [formGroup]="dia" [class.cerrado]="!dia.value.abierto">
+                    <label class="horario-nombre" [for]="'hr-' + $index">
+                        <p-toggleswitch [inputId]="'hr-' + $index" formControlName="abierto" />
+                        <span>{{ dias[$index] }}</span>
+                    </label>
+                    @if (dia.value.abierto) {
+                        <span class="horario-horas">
+                            <input pInputText type="time" formControlName="abre" [attr.aria-label]="dias[$index] + ': abre'" />
+                            <span aria-hidden="true">a</span>
+                            <input pInputText type="time" formControlName="cierra" [attr.aria-label]="dias[$index] + ': cierra'" />
+                        </span>
+                    } @else {
+                        <span class="horario-cerrado">No laboramos</span>
+                    }
+                </div>
+            }
+        </div>
+        <p class="adm-hint">Si la hora de cierre es menor que la de apertura (por ejemplo 12:00 a 03:00), se entiende que cierra de madrugada.</p>
+
+        <div class="acciones">
+            <button type="button" class="adm-btn" [disabled]="guardando() === 'horario' || horario.pristine" (click)="guardar('horario')">
+                {{ guardando() === 'horario' ? 'Guardando…' : 'Guardar horario' }}
+            </button>
+        </div>
+    </section>
+
     <!-- ================= DATOS DE PAGO ================= -->
     <form class="table bloque" [formGroup]="pagos" (ngSubmit)="guardar('pagos')" novalidate>
         <header class="bloque-head">

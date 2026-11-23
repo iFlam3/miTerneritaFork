@@ -9,6 +9,7 @@ import { SettingsService } from '../services/settings.service';
 import { ThemeToggleComponent } from '../../shared/components/theme-toggle/theme-toggle.component';
 import { AvatarComponent, avatarSeed } from '../../shared/components/avatar/avatar.component';
 import { VENUE } from '../data/site';
+import { agruparHorario, HORARIO_PREDETERMINADO, horarioSchema, horarioValido } from '../utils/horario';
 
 interface NavItem {
   label: string;
@@ -82,6 +83,8 @@ export class LayoutComponent implements OnInit {
   tiktok = signal('');
   whatsapp = signal('');
   email = signal('');
+  /** Horario del local agrupado ("Martes – Jueves · 12 m – 11 pm"). */
+  horario = signal(agruparHorario(HORARIO_PREDETERMINADO));
 
   user = computed(() => (this.authService.isAuthenticated() ? this.authService.getUser() : null));
   readonly seed = avatarSeed;
@@ -108,9 +111,28 @@ export class LayoutComponent implements OnInit {
       this.email.set(data?.email ? `mailto:${data.email}` : '');
       const phone = String(data?.phone ?? '').replace(/\D/g, '').replace(/^0/, '');
       this.whatsapp.set(phone.length >= 10 ? `https://wa.me/58${phone}` : '');
+      const horario = horarioValido(data?.horario);
+      this.horario.set(agruparHorario(horario));
+      this.datosLocal(horario);
     });
 
     this.onScroll();
+  }
+
+  /** Datos del local para Google (schema.org): nombre, dirección y horario, para la búsqueda y Maps. */
+  private datosLocal(horario: Parameters<typeof horarioSchema>[0]) {
+    const id = 'ld-local';
+    const script = this.document.getElementById(id) ?? this.document.head.appendChild(this.document.createElement('script'));
+    script.id = id;
+    script.setAttribute('type', 'application/ld+json');
+    script.textContent = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'BarOrPub',
+      name: VENUE.name,
+      url: 'https://miternerita.app',
+      address: { '@type': 'PostalAddress', streetAddress: VENUE.address, addressLocality: 'Maracaibo', addressRegion: 'Zulia', addressCountry: 'VE' },
+      openingHoursSpecification: horarioSchema(horario)
+    });
   }
 
   @HostListener('window:scroll')

@@ -196,6 +196,14 @@
         <div class="footer-col">
             <h4>Visítanos</h4>
             <p class="address"><i class="pi pi-map-marker"></i> {{ venue.address }}</p>
+            <div class="horario">
+                <p class="horario-titulo"><i class="pi pi-clock"></i> Horario del local</p>
+                <dl>
+                    @for (g of horario(); track g.dias) {
+                        <div><dt>{{ g.dias }}</dt><dd [class.cerrado]="g.horas === 'Cerrado'">{{ g.horas }}</dd></div>
+                    }
+                </dl>
+            </div>
             <a [href]="venue.mapsUrl" target="_blank" rel="noopener noreferrer" class="tm-link">
                 Cómo llegar <i class="pi pi-arrow-right"></i>
             </a>

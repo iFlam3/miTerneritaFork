@@ -1,4 +1,5 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
+import { DIAS, diaDeHoy, HORARIO_PREDETERMINADO, horarioValido, textoDia } from '../../@core/utils/horario';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { DomSanitizer } from '@angular/platform-browser';
 import { SettingsService } from '../../@core/services/settings.service';
@@ -25,6 +26,10 @@ export class ContactComponent implements OnInit {
   instagram = signal('');
   tiktok = signal('');
   email = signal('info@miternerita.com');
+  readonly dias = DIAS;
+  readonly hoy = diaDeHoy();
+  readonly textoDia = textoDia;
+  horario = signal(HORARIO_PREDETERMINADO);
 
   private phone = "584146416366";
   readonly whatsappUrl = `https://wa.me/${this.phone}`;
@@ -34,6 +39,7 @@ export class ContactComponent implements OnInit {
       this.instagram.set(data?.instagram ?? '');
       this.tiktok.set(data?.tiktok ?? '');
       if (data?.email) this.email.set(data.email);
+      this.horario.set(horarioValido(data?.horario));
     });
   }
 

@@ -92,3 +92,51 @@ label {
     flex: 1;
   }
 }
+
+// Horario del local: un día por fila con interruptor y dos horas.
+.horario {
+  display: grid;
+  gap: 6px;
+}
+
+.horario-dia {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  min-height: 52px;
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-2);
+
+  &.cerrado {
+    background: transparent;
+  }
+}
+
+.horario-nombre {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 140px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.horario-horas {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-muted);
+
+  input {
+    width: 150px;
+  }
+}
+
+.horario-cerrado {
+  color: var(--text-subtle);
+  font-size: 0.9rem;
+}
