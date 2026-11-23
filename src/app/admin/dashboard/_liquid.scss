@@ -1,9 +1,11 @@
 // Estilo "liquid glass" del dashboard (idea de liquid.md) con los colores de la marca:
-// vidrio esmerilado con brillo y bordes con luz sobre una foto del local (la barra).
+// vidrio esmerilado con brillo y bordes con luz sobre una foto del local
+// (de noche la barra; de día el Manhattan bar, con luz: ver dashboard.component.scss).
 // Azul, verde, ámbar y rojo son los de la app (_tokens.scss): aquí no se cambian.
 // Los colores van en rgba()/hex: los gráficos (Chart.js) los leen con getComputedStyle.
 
-$foto: url('/assets/img/optimized/zona3.webp');
+$foto-noche: url('/assets/img/optimized/zona3.webp');
+$foto-dia: url('/assets/img/optimized/zona1.webp');
 
 @mixin tokens {
   // Oscuro (por defecto): vidrio neutro, como el resto del panel.
@@ -20,6 +22,7 @@ $foto: url('/assets/img/optimized/zona3.webp');
   --lq-inner: rgba(255, 255, 255, 0.05);
   --lq-solid: #15151a;
   --lq-shadow: 0 0 0;
+  --lq-foto: #{$foto-noche};
   // Foto oscurecida con un brillo azul de la marca arriba a la izquierda.
   --lq-scene:
     radial-gradient(55% 45% at 10% 0%, rgba(91, 124, 255, 0.18), transparent 70%),
@@ -87,7 +90,7 @@ $foto: url('/assets/img/optimized/zona3.webp');
     inset: -40px;
     z-index: -1;
     // Anclada arriba a todo el ancho: el dashboard es alto y con cover la foto salía muy ampliada.
-    background: var(--lq-scene), $foto top center / 100% auto no-repeat, var(--bg);
+    background: var(--lq-scene), var(--lq-foto) top center / 100% auto no-repeat, var(--bg);
     filter: blur(14px) saturate(1.3);
     pointer-events: none;
   }
@@ -149,4 +152,9 @@ $foto: url('/assets/img/optimized/zona3.webp');
       color: var(--lq-primary-ink);
     }
   }
+}
+
+/** Foto de día: se incluye en :host(.de-dia). */
+@mixin foto-dia {
+  --lq-foto: #{$foto-dia};
 }

@@ -3,8 +3,25 @@
     <section class="welcome">
         <div>
             <p class="date">{{ today | date: "EEEE d 'de' MMMM, y" | capFirst }}</p>
-            <h2>Hola{{ userName ? ', ' + userName : '' }}</h2>
-            <p class="tm-muted">Este es el resumen de ventas y actividad de Mi Ternerita House.</p>
+            <h2>{{ saludo() }}{{ userName ? ', ' + userName : '' }}{{ saludo() === 'Trasnochando' ? ' 🌙' : '' }}</h2>
+            <!-- Se vuelve a crear al cambiar: así la frase nueva entra con un fundido -->
+            @for (f of [frase()]; track f) {
+                <p class="tm-muted frase">{{ f }}</p>
+            }
+            <div class="vivo">
+                @if (enLinea(); as e) {
+                    <span class="vivo-chip" role="status" [class.activo]="e.activas > 0">
+                        <i class="pulso" aria-hidden="true"></i>
+                        {{ e.activas }} {{ e.activas === 1 ? 'persona' : 'personas' }} en la web ahora
+                    </span>
+                }
+                @if (cuentaAtras(); as c) {
+                    <span class="vivo-chip"><i class="pi pi-calendar-clock" aria-hidden="true"></i> {{ c.nombre }} · {{ c.texto }}</span>
+                }
+            </div>
+            @if (actividad(); as a) {
+                <p class="actividad"><i class="pi pi-bolt" aria-hidden="true"></i> {{ a }}</p>
+            }
         </div>
         <div class="quick">
             <div class="tasa">
@@ -45,7 +62,7 @@
             @if (loadingKpis()) {
                 <span class="tm-skeleton kpi-sk"></span>
             } @else {
-                <strong class="kpi-value">{{ totalClientes() }}</strong>
+                <strong class="kpi-value" [appContar]="totalClientes()"></strong>
             }
             <span class="kpi-foot"><span class="up"><i class="pi pi-arrow-up-right"></i> {{ clientesHoy() }}</span> nuevos hoy</span>
         </a>
@@ -56,7 +73,7 @@
             @if (loadingPayments()) {
                 <span class="tm-skeleton kpi-sk"></span>
             } @else {
-                <strong class="kpi-value">{{ pagosEvento().entradas }}</strong>
+                <strong class="kpi-value" [appContar]="pagosEvento().entradas"></strong>
             }
             <span class="kpi-foot">{{ eventoFiltro() === null ? 'Total acumulado' : 'En este evento' }}</span>
         </div>
@@ -67,18 +84,21 @@
             @if (loadingPayments()) {
                 <span class="tm-skeleton kpi-sk"></span>
             } @else {
-                <strong class="kpi-value">{{ pagosEvento().total }}</strong>
+                <strong class="kpi-value" [appContar]="pagosEvento().total"></strong>
             }
             <span class="kpi-foot">{{ pagosEvento().Aprobado }} aprobados</span>
         </a>
 
-        <a routerLink="/admin/payments" class="kpi" [class.attention]="pagosEvento().Pendiente > 0">
+        <a routerLink="/admin/payments" class="kpi" [class.attention]="pagosEvento().Pendiente > 0" [class.destello]="nuevosPendientes() > 0">
+            @if (nuevosPendientes(); as n) {
+                <span class="nuevo" role="status">+{{ n }} {{ n === 1 ? 'nuevo' : 'nuevos' }}</span>
+            }
             <span class="kpi-icon amber"><i class="pi pi-clock"></i></span>
             <span class="kpi-label">Pagos por verificar</span>
             @if (loadingPayments()) {
                 <span class="tm-skeleton kpi-sk"></span>
             } @else {
-                <strong class="kpi-value">{{ pagosEvento().Pendiente }}</strong>
+                <strong class="kpi-value" [appContar]="pagosEvento().Pendiente"></strong>
             }
             <span class="kpi-foot">{{ pagosEvento().Pendiente ? 'Requieren tu revisión' : 'Todo al día' }}</span>
         </a>
@@ -199,6 +219,12 @@
                         <div>
                             <strong>{{ ev.name }}</strong>
                             <small>{{ ev.timeLabel }} · {{ ev.room }}</small>
+                            @if (ev.aforo) {
+                                <span class="aforo" [attr.aria-label]="ev.vendidas + ' de ' + ev.aforo + ' entradas vendidas'">
+                                    <span class="aforo-barra"><i [style.--p]="ev.aforoPct / 100"></i></span>
+                                    <small>{{ ev.vendidas }} / {{ ev.aforo }}</small>
+                                </span>
+                            }
                         </div>
                         <a [routerLink]="['/home/event', ev.idEvents]" class="tm-icon-btn" aria-label="Ver en el sitio"><i class="pi pi-external-link"></i></a>
                     </li>

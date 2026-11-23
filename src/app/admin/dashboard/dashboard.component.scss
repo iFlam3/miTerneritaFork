@@ -11,6 +11,10 @@
   @include lq.tokens-light;
 }
 
+:host(.de-dia) {
+  @include lq.foto-dia;
+}
+
 // Escenario: marco de vidrio sobre la foto del local; los paneles la difuminan.
 .dash {
   container: dash / inline-size;
@@ -55,6 +59,89 @@
 
   p {
     margin: 0;
+  }
+}
+
+// Frase del momento: entra con un fundido cada vez que cambia.
+.frase {
+  max-width: 62ch;
+  animation: frase-entra 0.6s var(--ease-out) both;
+}
+
+@keyframes frase-entra {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+
+// En vivo: personas en la web y cuenta regresiva al próximo evento.
+.vivo {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.85rem;
+
+  &:empty {
+    display: none;
+  }
+}
+
+.vivo-chip {
+  @include lq.inset;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 32px;
+  padding: 0 0.8rem;
+  border-radius: 999px;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-weight: 700;
+
+  .pi {
+    color: var(--primary);
+    font-size: 0.85rem;
+  }
+
+  &.activo {
+    color: var(--lq-ink);
+  }
+}
+
+.pulso {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text-subtle);
+
+  .activo & {
+    background: var(--success);
+    animation: pulso 2s infinite;
+  }
+}
+
+@keyframes pulso {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--success) 60%, transparent);
+  }
+  70%,
+  100% {
+    box-shadow: 0 0 0 7px transparent;
+  }
+}
+
+.actividad {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.6rem !important;
+  color: var(--text-subtle);
+  font-size: 0.78rem;
+
+  .pi {
+    color: var(--warning);
+    font-size: 0.75rem;
   }
 }
 
@@ -186,6 +273,25 @@
     border-color: color-mix(in srgb, var(--warning) 55%, transparent);
   }
 
+  // Llegó un pago por verificar mientras se miraba el panel.
+  &.destello {
+    animation: destello 1.2s var(--ease-out) 2;
+  }
+
+  .nuevo {
+    // Abajo a la derecha: arriba tapaba el título de la tarjeta.
+    position: absolute;
+    right: 14px;
+    bottom: 12px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: var(--warning);
+    color: #1a1305;
+    font-size: 0.72rem;
+    font-weight: 800;
+    animation: frase-entra 0.4s var(--ease-out) both;
+  }
+
   // Indicador principal en el azul de la marca, como la tarjeta destacada de liquid.
   &.destacada {
     --text-muted: rgba(255, 255, 255, 0.82);
@@ -203,6 +309,15 @@
       background: rgba(255, 255, 255, 0.16);
       color: #fff;
     }
+  }
+}
+
+@keyframes destello {
+  40% {
+    border-color: var(--warning);
+    box-shadow:
+      inset 0 1px 1px var(--lq-edge-light),
+      0 0 0 4px color-mix(in srgb, var(--warning) 30%, transparent);
   }
 }
 
@@ -590,6 +705,44 @@
   }
 }
 
+// Aforo: entradas aprobadas sobre la capacidad; la barra se llena al cargar.
+.aforo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.35rem;
+
+  small {
+    flex: none;
+    font-size: 0.72rem !important;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.aforo-barra {
+  flex: 1;
+  height: 5px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--lq-line);
+
+  i {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--primary);
+    transform: scaleX(var(--p));
+    transform-origin: left center;
+    animation: llenar 0.9s var(--ease-out) both;
+  }
+}
+
+@keyframes llenar {
+  from {
+    transform: scaleX(0);
+  }
+}
+
 .date-badge {
   display: grid;
   place-items: center;
@@ -668,5 +821,15 @@
 @media (max-width: 560px) {
   .dash {
     border-radius: 24px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .frase,
+  .kpi.destello,
+  .kpi .nuevo,
+  .aforo-barra i,
+  .activo .pulso {
+    animation: none;
   }
 }
