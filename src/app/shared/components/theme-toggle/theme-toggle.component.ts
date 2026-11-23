@@ -12,7 +12,7 @@ let nextId = 0;
       [class.is-dark]="theme.isDark()"
       [attr.aria-label]="theme.isDark() ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'"
       [attr.title]="theme.isDark() ? 'Modo claro' : 'Modo oscuro'"
-      (click)="toggle($event)"
+      (click)="toggle()"
     >
       <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
         <mask [attr.id]="maskId">
@@ -115,8 +115,7 @@ export class ThemeToggleComponent {
   readonly theme = inject(ThemeService);
   readonly maskId = `tm-moon-mask-${nextId++}`;
 
-  toggle(event: MouseEvent) {
-    const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
-    this.theme.toggle({ x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 });
+  toggle() {
+    this.theme.toggle();
   }
 }

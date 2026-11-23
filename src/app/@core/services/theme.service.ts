@@ -24,40 +24,17 @@ export class ThemeService {
   }
 
   /**
-   * Cambia el tema con un revelado circular que nace del punto donde se hizo clic.
-   * Usa la View Transitions API cuando existe y, si no, un fundido de colores.
+   * Cambia el tema al instante. Antes había un revelado circular (View Transition) y luego
+   * un fundido: capturar y animar toda la página iba a tirones en equipos modestos y subía
+   * el INP. Durante el cambio se apagan las transiciones para que nada se anime de a poco.
    */
-  toggle(origin?: { x: number; y: number }) {
-    const next: Theme = this.isDark() ? 'light' : 'dark';
+  toggle() {
     const root = this.document.documentElement;
-    const win = this.document.defaultView;
-    const reduceMotion = win?.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const startViewTransition = (this.document as any).startViewTransition?.bind(this.document);
-
-    if (!startViewTransition || reduceMotion || !win || this.document.visibilityState !== 'visible') {
-      root.classList.add('theme-fade');
-      this.apply(next);
-      win?.setTimeout(() => root.classList.remove('theme-fade'), 500);
-      return;
-    }
-
-    const x = origin?.x ?? win.innerWidth - 40;
-    const y = origin?.y ?? 36;
-    const radius = Math.hypot(Math.max(x, win.innerWidth - x), Math.max(y, win.innerHeight - y));
-
-    root.classList.add('theme-vt');
-    const transition = startViewTransition(() => this.apply(next));
-
-    transition.ready
-      .then(() => {
-        root.animate(
-          { clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${radius}px at ${x}px ${y}px)`] },
-          { duration: 450, easing: 'cubic-bezier(0.65, 0, 0.35, 1)', pseudoElement: '::view-transition-new(root)' }
-        );
-      })
-      .catch(() => {});
-
-    transition.finished.finally(() => root.classList.remove('theme-vt'));
+    root.classList.add('theme-swap');
+    this.apply(this.isDark() ? 'light' : 'dark');
+    // Fuerza el estilo nuevo sin transiciones y las vuelve a activar en el siguiente fotograma.
+    void root.offsetWidth;
+    requestAnimationFrame(() => root.classList.remove('theme-swap'));
   }
 
   private apply(theme: Theme) {

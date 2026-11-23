@@ -4,8 +4,10 @@
 // Azul, verde, ámbar y rojo son los de la app (_tokens.scss): aquí no se cambian.
 // Los colores van en rgba()/hex: los gráficos (Chart.js) los leen con getComputedStyle.
 
-$foto-noche: url('/assets/img/optimized/zona3.webp');
-$foto-dia: url('/assets/img/optimized/zona1.webp');
+// Versiones pequeñas ya desenfocadas (480 px, ~5-10 KB): el navegador las amplía suaves y no
+// calcula ningún filtro. Un blur() en vivo sobre todo el escenario hacía lentos el menú y el tema.
+$foto-noche: url('/assets/img/optimized/zona3-desenfoque.webp');
+$foto-dia: url('/assets/img/optimized/zona1-desenfoque.webp');
 
 @mixin tokens {
   // Oscuro (por defecto): vidrio neutro, como el resto del panel.
@@ -73,27 +75,16 @@ $foto-dia: url('/assets/img/optimized/zona1.webp');
 }
 
 /**
- * Fondo del escenario: brillo de vidrio + velo del tema + foto desenfocada.
- * La foto se desenfoca una vez en su propia capa (::before) y los paneles no usan
- * backdrop-filter: desenfocar en vivo cada panel hacía muy pesado el scroll.
+ * Fondo del escenario: brillo de vidrio + velo del tema + foto ya desenfocada.
+ * Ni filter ni backdrop-filter: se pinta como un fondo normal (barato al desplazar,
+ * redimensionar el menú o cambiar de tema).
  */
 @mixin scene {
-  position: relative;
-  isolation: isolate;
-  overflow: hidden;
-  background: linear-gradient(148deg, var(--lq-gloss), transparent 19% 77%, var(--lq-gloss));
-
-  &::before {
-    content: '';
-    position: absolute;
-    // Más grande que el marco: el desenfoque aclara los bordes de la foto.
-    inset: -40px;
-    z-index: -1;
-    // Anclada arriba a todo el ancho: el dashboard es alto y con cover la foto salía muy ampliada.
-    background: var(--lq-scene), var(--lq-foto) top center / 100% auto no-repeat, var(--bg);
-    filter: blur(14px) saturate(1.3);
-    pointer-events: none;
-  }
+  background:
+    linear-gradient(148deg, var(--lq-gloss), transparent 19% 77%, var(--lq-gloss)),
+    var(--lq-scene),
+    var(--lq-foto) top center / 100% auto no-repeat,
+    var(--bg);
 }
 
 /** Tarjeta de vidrio: paneles e indicadores. */

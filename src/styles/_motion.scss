@@ -31,40 +31,20 @@
 }
 
 // La barra de navegación queda fija mientras cambia el contenido.
-// (Se desactiva durante el cambio de tema para que el círculo la cubra.)
-html:not(.theme-vt) .tm-vt-header {
+.tm-vt-header {
   view-transition-name: site-header;
 }
 
-html:not(.theme-vt) .tm-vt-sidebar {
+.tm-vt-sidebar {
   view-transition-name: admin-sidebar;
 }
 
-// ---- Cambio de tema: revelado circular desde el botón ----
-html.theme-vt::view-transition-old(root),
-html.theme-vt::view-transition-new(root) {
-  animation: none;
-  mix-blend-mode: normal;
-}
-
-html.theme-vt::view-transition-old(root) {
-  z-index: 1;
-}
-
-html.theme-vt::view-transition-new(root) {
-  z-index: 2;
-}
-
-// Sin soporte de View Transitions: transición de color suave.
-html.theme-fade,
-html.theme-fade *,
-html.theme-fade *::before,
-html.theme-fade *::after {
-  transition:
-    background-color 0.45s var(--ease-out),
-    border-color 0.45s var(--ease-out),
-    color 0.45s var(--ease-out),
-    fill 0.45s var(--ease-out) !important;
+// ---- Cambio de tema: instantáneo, sin transiciones durante el cambio (ver ThemeService) ----
+html.theme-swap,
+html.theme-swap *,
+html.theme-swap *::before,
+html.theme-swap *::after {
+  transition: none !important;
 }
 
 // ---- Accesibilidad: respetar "reducir movimiento" ----

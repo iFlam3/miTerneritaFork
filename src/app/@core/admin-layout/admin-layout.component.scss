@@ -59,10 +59,11 @@
   padding: 18px 14px;
   border-right: 1px solid var(--border);
   background: var(--bg-soft);
-  // Rápida: cada fotograma vuelve a maquetar el contenido (y los gráficos) al cambiar el ancho.
+  // Solo la barra (fija) anima su ancho; el contenido salta al ancho final de una vez
+  // (animar su margen reacomodaba gráficos y tarjetas en cada fotograma).
   transition:
-    width 220ms var(--ease-out),
-    transform 260ms var(--ease-out);
+    width 160ms var(--ease-out),
+    transform 220ms var(--ease-out);
 }
 
 .side-top {
@@ -256,7 +257,6 @@
   min-height: 100vh;
   min-height: 100dvh;
   margin-left: var(--side-w);
-  transition: margin-left 220ms var(--ease-out);
 }
 
 .topbar {
