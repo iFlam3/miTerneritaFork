@@ -80,11 +80,24 @@ $foto-dia: url('/assets/img/optimized/zona1-desenfoque.webp');
  * redimensionar el menú o cambiar de tema).
  */
 @mixin scene {
-  background:
-    linear-gradient(148deg, var(--lq-gloss), transparent 19% 77%, var(--lq-gloss)),
-    var(--lq-scene),
-    var(--lq-foto) top center / 100% auto no-repeat,
-    var(--bg);
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background: linear-gradient(148deg, var(--lq-gloss), transparent 19% 77%, var(--lq-gloss)), var(--bg);
+
+  // Foto arriba que se funde con el fondo hacia abajo (antes terminaba con un corte recto).
+  // Solo máscara, sin filtros: se pinta una vez.
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto;
+    z-index: -1;
+    height: min(100%, 980px);
+    background: var(--lq-scene), var(--lq-foto) center / cover no-repeat;
+    -webkit-mask-image: linear-gradient(#000 45%, transparent);
+    mask-image: linear-gradient(#000 45%, transparent);
+    pointer-events: none;
+  }
 }
 
 /** Tarjeta de vidrio: paneles e indicadores. */

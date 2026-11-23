@@ -24,17 +24,31 @@ export class ThemeService {
   }
 
   /**
-   * Cambia el tema al instante. Antes había un revelado circular (View Transition) y luego
-   * un fundido: capturar y animar toda la página iba a tirones en equipos modestos y subía
-   * el INP. Durante el cambio se apagan las transiciones para que nada se anime de a poco.
+   * Cambia el tema al instante y lo suaviza con un velo del color anterior que se desvanece.
+   * Antes había un revelado circular (View Transition): capturar y animar toda la página iba
+   * a tirones en equipos modestos y subía el INP. El velo es una sola capa que solo anima su
+   * opacidad (la hace la GPU). Durante el cambio se apagan las transiciones de la página.
    */
   toggle() {
     const root = this.document.documentElement;
+    this.velo(getComputedStyle(root).getPropertyValue('--bg').trim());
     root.classList.add('theme-swap');
     this.apply(this.isDark() ? 'light' : 'dark');
     // Fuerza el estilo nuevo sin transiciones y las vuelve a activar en el siguiente fotograma.
     void root.offsetWidth;
     requestAnimationFrame(() => root.classList.remove('theme-swap'));
+  }
+
+  private velo(color: string) {
+    const win = this.document.defaultView;
+    if (!color || !win || this.document.visibilityState !== 'visible' || win.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const velo = this.document.createElement('div');
+    velo.setAttribute('aria-hidden', 'true');
+    velo.style.cssText = `position:fixed;inset:0;z-index:2147483647;pointer-events:none;background:${color}`;
+    this.document.body.appendChild(velo);
+    velo.animate({ opacity: [1, 0] }, { duration: 260, easing: 'ease-out', fill: 'forwards' });
+    // Con temporizador y no con .finished: si el navegador pausa la animación, el velo no se queda.
+    win.setTimeout(() => velo.remove(), 400);
   }
 
   private apply(theme: Theme) {
