@@ -10,6 +10,8 @@ const SESION_KEY = 'mt_sesion';
 const SESION_MS = 30 * 60_000;
 /** Latido mientras la pestaña está a la vista: así se sabe quién sigue en línea. */
 const LATIDO_MS = 60_000;
+/** Sin tocar la página, la visita cuenta tras este tiempo a la vista; los robots cargan y se van antes. */
+const HUMANO_MS = 10_000;
 
 export interface ResumenVisitas {
   dias: number;
@@ -68,17 +70,41 @@ export class VisitasService {
   private router = inject(Router);
   private api = `${environment.api}/visitas`;
   private iniciado = false;
+  /** Hasta confirmar que hay una persona, las páginas vistas esperan aquí. */
+  private humano = false;
+  private pendientes: { paso: string; idEvents?: number }[] = [];
 
   iniciar() {
     if (this.iniciado) return;
     this.iniciado = true;
+    this.esperarHumano();
     this.router.events.pipe(filter((e): e is NavigationEnd => e instanceof NavigationEnd)).subscribe(e => {
       const p = pasoDe(e.urlAfterRedirects);
-      if (p) this.enviar(p.paso, p.idEvents);
+      if (!p) return;
+      if (this.humano) this.enviar(p.paso, p.idEvents);
+      else this.pendientes.push(p);
     });
     setInterval(() => {
-      if (document.visibilityState === 'visible' && pasoDe(this.router.url)) this.enviar();
+      if (this.humano && document.visibilityState === 'visible' && pasoDe(this.router.url)) this.enviar();
     }, LATIDO_MS);
+  }
+
+  /** La visita cuenta con la primera interacción (clic, tecla, scroll) o tras HUMANO_MS a la vista. */
+  private esperarHumano() {
+    const eventos = ['pointerdown', 'keydown', 'scroll', 'touchstart'] as const;
+    let visibleMs = 0;
+    const reloj = setInterval(() => {
+      if (document.visibilityState === 'visible') visibleMs += 1000;
+      if (visibleMs >= HUMANO_MS) confirmar();
+    }, 1000);
+    const confirmar = () => {
+      if (this.humano) return;
+      this.humano = true;
+      clearInterval(reloj);
+      eventos.forEach(e => window.removeEventListener(e, confirmar, true));
+      for (const p of this.pendientes.splice(0)) this.enviar(p.paso, p.idEvents);
+    };
+    eventos.forEach(e => window.addEventListener(e, confirmar, { capture: true, passive: true }));
   }
 
   /** Paso que no es una página: el pago enviado. */
