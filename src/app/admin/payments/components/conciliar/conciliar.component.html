@@ -1,0 +1,56 @@
+<div class="conciliar">
+  <input #archivoInput type="file" hidden accept=".xlsx,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv" (change)="elegir(archivoInput)" />
+
+  <button type="button" class="dropzone" [appDropFiles]="archivoInput" (click)="archivoInput.click()" [disabled]="cargando()">
+    <i class="pi" [class.pi-file-excel]="!cargando()" [class.pi-spin]="cargando()" [class.pi-spinner]="cargando()"></i>
+    @if (archivo()) {
+      <strong>{{ archivo() }}</strong>
+      <small>Suelta otro archivo o haz clic para cambiarlo</small>
+    } @else {
+      <strong>Suelta aquí el estado de cuenta</strong>
+      <small>.xlsx o .csv exportado del banco. Si el banco da .xls, guárdalo como .xlsx en Excel.</small>
+    }
+  </button>
+
+  @if (datos(); as d) {
+    <p class="resumen">
+      {{ d.filas }} movimientos leídos · {{ d.pendientes }} pagos pendientes ·
+      <strong>{{ d.resultados.length }}</strong> encontrados en el banco
+    </p>
+
+    @if (d.resultados.length) {
+      <ul class="lista">
+        @for (r of d.resultados; track r.idPayment) {
+          <li [class.dudoso]="r.resultado === 'monto_distinto'">
+            <label>
+              <input type="checkbox" [checked]="marcados().has(r.idPayment)" (change)="alternar(r.idPayment)" />
+              <span class="pago">
+                <strong>{{ r.cliente || 'Sin nombre' }}</strong>
+                <small>{{ r.cedula }} · {{ r.evento }} · N° {{ r.noDocumento }}</small>
+                <small>{{ r.banco }} · Ref. {{ r.referencia }}</small>
+              </span>
+              <span class="monto">
+                <strong>{{ r.totalUsd | currency: 'USD' : 'symbol' : '1.2-2' }}</strong>
+                @if (r.totalBs) { <small>Bs {{ r.totalBs | number: '1.2-2' : 'es-VE' }}</small> }
+                @if (r.resultado === 'coincide') {
+                  <span class="tag ok"><i class="pi pi-check"></i> Coincide</span>
+                } @else {
+                  <span class="tag warn"><i class="pi pi-exclamation-triangle"></i> Revisar monto</span>
+                }
+              </span>
+            </label>
+            <small class="fila" [title]="r.texto">Banco, fila {{ r.fila }}: {{ r.texto }}</small>
+          </li>
+        }
+      </ul>
+    } @else {
+      <p class="vacio">Ningún pago pendiente aparece en este estado de cuenta.</p>
+    }
+  }
+
+  <div class="acciones">
+    <button pButton type="button" class="p-button-text" (click)="cerrar()">Cerrar</button>
+    <button pButton type="button" [disabled]="!totalMarcados() || aprobando()" [loading]="aprobando()" (click)="aprobar()"
+      [label]="totalMarcados() ? 'Aprobar ' + totalMarcados() + (totalMarcados() === 1 ? ' pago' : ' pagos') : 'Aprobar'"></button>
+  </div>
+</div>

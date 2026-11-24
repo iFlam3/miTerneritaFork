@@ -16,6 +16,7 @@ import { UpdatePaymentComponent } from './components/update-payment/update-payme
 import { Payment } from '../../@core/models/payment.model';
 import { LoaderComponent } from '../../@core/components/loader/loader.component';
 import { CreatePaymentComponent } from './components/create-payment/create-payment.component';
+import { ConciliarComponent } from './components/conciliar/conciliar.component';
 
 /** Día del pago en hora local, 'AAAA-MM-DD', comparable con un <input type=date>. */
 const diaLocal = (fecha: string | Date) => {
@@ -133,6 +134,43 @@ export class PaymentsComponent implements OnInit{
     });
     this.ref.onClose.subscribe(() => {
       this.isModalOpen = false;
+    });
+  }
+
+  openConciliar() {
+    this.isModalOpen = true;
+    this.ref = this.dialogService.open(ConciliarComponent, {
+      header: 'Conciliar con el banco',
+      width: '760px',
+      modal: true,
+      closable: true,
+      breakpoints: { '960px': '94vw' }
+    });
+    this.ref.onClose.subscribe(() => {
+      this.isModalOpen = false;
+    });
+  }
+
+  readonly exportando = signal(false);
+
+  /** Descarga en Excel los pagos con los filtros que hay puestos. */
+  exportar() {
+    const f = this.filtros();
+    this.exportando.set(true);
+    this.paymentsService.exportar({ desde: f.desde, hasta: f.hasta, idEvents: f.evento, status: f.estado }).subscribe({
+      next: blob => {
+        this.exportando.set(false);
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `pagos-${f.desde || 'inicio'}_${f.hasta || diaLocal(new Date())}.xlsx`;
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      },
+      error: () => {
+        this.exportando.set(false);
+        this.messageService.add({ severity: 'error', summary: 'No se pudo exportar' });
+      }
     });
   }
 

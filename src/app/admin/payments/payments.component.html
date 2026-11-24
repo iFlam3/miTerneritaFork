@@ -40,6 +40,8 @@
                   <button pButton pRipple class="btn-delete" (click)="eliminar(seleccion)" [attr.aria-label]="'Eliminar ' + seleccion.length + ' pagos'"><i class="pi pi-trash"></i></button>
                 }
 
+                <button type="button" class="btn-sec" (click)="openConciliar()" title="Cruzar el estado de cuenta del banco con los pagos pendientes"><i class="pi pi-building-columns"></i> Conciliar banco</button>
+                <button type="button" class="btn-sec" (click)="exportar()" [disabled]="exportando()" title="Descargar los pagos filtrados en Excel"><i class="pi" [class.pi-file-excel]="!exportando()" [class.pi-spinner]="exportando()" [class.pi-spin]="exportando()"></i> Exportar Excel</button>
                 <button
                     class="btn"
                     icon=""

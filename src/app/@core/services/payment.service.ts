@@ -12,6 +12,17 @@ export interface ReporteEvento {
   totales: { entradas: number; consumo: number; general: number };
 }
 
+/** POST /payment/conciliar */
+export interface Conciliacion {
+  filas: number;
+  pendientes: number;
+  resultados: {
+    idPayment: number; resultado: 'coincide' | 'monto_distinto'; fila: number; texto: string;
+    noDocumento: string; cliente: string; cedula: string | null; evento: string | null;
+    banco: string; referencia: string; totalUsd: number; totalBs: number | null;
+  }[];
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -20,6 +31,27 @@ export class PaymentService {
   private http = inject(HttpClient);
   private refreshPayments$ = new Subject<void>();
   public refreshPaymentsObservable$ = this.refreshPayments$.asObservable();
+
+  /** Cruza el estado de cuenta (xlsx/csv) con los pagos pendientes. No cambia nada. */
+  conciliar(archivo: File) {
+    const fd = new FormData();
+    fd.append('archivo', archivo);
+    return this.http.post<Conciliacion>(`${this.api}/payment/conciliar`, fd);
+  }
+
+  /** Aprueba varios pagos: cada uno emite su QR y su correo. */
+  aprobarLote(ids: number[]) {
+    return this.http.post<{ aprobados: number[]; errores: { idPayment: number; mensaje: string }[] }>(
+      `${this.api}/payment/aprobar-lote`, { ids }
+    ).pipe(tap(() => this.refreshPayments$.next()));
+  }
+
+  /** Excel de pagos para el contador, con los filtros dados. */
+  exportar(filtros: { desde?: string; hasta?: string; idEvents?: number | null; status?: string }) {
+    const params: Record<string, string> = {};
+    for (const [k, v] of Object.entries(filtros)) if (v) params[k] = String(v);
+    return this.http.get(`${this.api}/payment/exportar`, { params, responseType: 'blob' });
+  }
 
   getReporte(idEvents: number) {
     return this.http.get<ReporteEvento>(`${this.api}/payment/reporte/${idEvents}`);
