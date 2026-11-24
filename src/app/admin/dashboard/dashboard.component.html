@@ -28,7 +28,7 @@
                 <span>
                     <!-- fechaBCV es la fecha valor del BCV (sin hora), no la hora de la consulta -->
                     <small>Tasa BCV{{ tasa.tasa()?.fecha ? ' · vigente del ' + (tasa.tasa()!.fecha | date: 'dd/MM') : '' }}</small>
-                    <strong>{{ tasa.tasa()?.valor ? (tasa.tasa()!.valor | number: '1.2-4') + ' Bs/$' : 'Sin tasa' }}</strong>
+                    <strong>{{ tasa.tasa()?.valor ? (tasa.tasa()!.valor | number: '1.2-2') + ' Bs/$' : 'Sin tasa' }}</strong>
                 </span>
                 <button type="button" class="tm-icon-btn" (click)="refrescarTasa()" [disabled]="refrescandoTasa()" aria-label="Actualizar la tasa del día" title="Actualizar la tasa del día">
                     <i class="pi pi-refresh" [class.pi-spin]="refrescandoTasa()"></i>
