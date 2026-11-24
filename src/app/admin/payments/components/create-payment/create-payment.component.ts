@@ -83,13 +83,20 @@ export class CreatePaymentComponent implements OnInit{
   });
 }
 
+  /** Última cédula buscada: evita repetir la búsqueda al salir del campo. */
+  private ultimaCedula = '';
+
   searchUserByCedula(event: any){
     let NuCedula = event?.target?.value?.trim().toUpperCase() || '';
 
     if(!NuCedula) {
-      this.messageService.add({ severity: 'error', summary: 'Debe ingresar una cédula para buscar el usuario' });
+      // Al salir del campo vacío no se avisa: solo con Enter.
+      if (event?.type === 'keydown') this.messageService.add({ severity: 'error', summary: 'Debe ingresar una cédula para buscar el usuario' });
       return;
     }
+    // Misma cédula y cliente ya cargado: Enter + salir del campo no repiten la búsqueda.
+    if (NuCedula === this.ultimaCedula && this.paymentFom.value.idUser) return;
+    this.ultimaCedula = NuCedula;
 
     // El backend acepta la cédula con o sin prefijo (V-31419200 o 31419200).
     this.paymentFom.patchValue({ name: '', idUser: '' });
@@ -101,18 +108,16 @@ export class CreatePaymentComponent implements OnInit{
           name: `${res.name} ${res.lastName}`,
           idUser: res.id
          });
+         // La cédula queda normalizada (V-...): se guarda así para no buscarla de nuevo.
+         this.ultimaCedula = String(res.cedula ?? NuCedula).toUpperCase();
 
-
+        // Sin devolver el foco a la cédula: eso hacía que al tocar otro campo se volviera a buscar en bucle.
         this.messageService.add({ severity: 'success', summary: `Usuario: ${res.name} ${res.lastName} encontrado` });
-
-         setTimeout(() => {
-        const el = document.querySelector<HTMLInputElement>(
-          'input[formcontrolname="cedula"]'
-        );
-      el?.focus();
-    }, 0);
     }},
-      error: () => this.messageService.add({ severity: 'warn', summary: 'No hay ningún usuario con esa cédula' })
+      error: () => {
+        this.ultimaCedula = '';
+        this.messageService.add({ severity: 'warn', summary: 'No hay ningún usuario con esa cédula' });
+      }
     })
   }
 
