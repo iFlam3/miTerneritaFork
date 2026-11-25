@@ -1,5 +1,5 @@
 <div class="conciliar">
-  <input #archivoInput type="file" hidden accept=".xlsx,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv" (change)="elegir(archivoInput)" />
+  <input #archivoInput type="file" hidden accept=".xlsx,.csv,.txt,text/plain,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv" (change)="elegir(archivoInput)" />
 
   <button type="button" class="dropzone" [appDropFiles]="archivoInput" (click)="archivoInput.click()" [disabled]="cargando()">
     <i class="pi" [class.pi-file-excel]="!cargando()" [class.pi-spin]="cargando()" [class.pi-spinner]="cargando()"></i>
@@ -8,7 +8,7 @@
       <small>Suelta otro archivo o haz clic para cambiarlo</small>
     } @else {
       <strong>Suelta aquí el estado de cuenta</strong>
-      <small>.xlsx o .csv exportado del banco. Si el banco da .xls, guárdalo como .xlsx en Excel.</small>
+      <small>.xlsx, .csv o el .txt del BNC. Si el banco da .xls, guárdalo como .xlsx en Excel.</small>
     }
   </button>
 
