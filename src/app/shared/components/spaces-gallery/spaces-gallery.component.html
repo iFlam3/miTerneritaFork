@@ -10,7 +10,7 @@
         <div class="bento">
             @for (s of spaces; track s.name; let i = $index) {
                 <figure class="bento-item b{{ i }}" appReveal [revealDelay]="i * 80">
-                    <img src="{{ s.image }}" [alt]="'Espacio ' + s.name" loading="lazy" />
+                    <img [src]="s.image" [attr.srcset]="srcset(s.image)" sizes="(max-width: 899px) 92vw, 45vw" [alt]="'Espacio ' + s.name" loading="lazy" decoding="async" />
                     <figcaption>{{ s.name }}</figcaption>
                 </figure>
             }

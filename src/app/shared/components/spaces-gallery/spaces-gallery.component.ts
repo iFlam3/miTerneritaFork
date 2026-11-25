@@ -11,4 +11,10 @@ import { RevealDirective } from '../../directives/reveal.directive';
 })
 export class SpacesGalleryComponent {
   readonly spaces = SPACES;
+
+  /** Variantes de 480 y 800 px (mismo nombre con -480/-800): el móvil no baja la foto de 1600 px. */
+  srcset(src: string) {
+    const base = src.replace(/\.webp$/, '');
+    return `${base}-480.webp 480w, ${base}-800.webp 800w, ${src} 1600w`;
+  }
 }
