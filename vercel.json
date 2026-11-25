@@ -11,15 +11,30 @@
   "routes": [
     {
       "src": "/(.*-[A-Z0-9]{8}\\.(js|css))",
-      "headers": { "cache-control": "public, max-age=31536000, immutable" },
+      "headers": {
+        "cache-control": "public, max-age=31536000, immutable"
+      },
       "continue": true
     },
     {
       "src": "/assets/fonts/(.*)",
-      "headers": { "cache-control": "public, max-age=2592000" },
+      "headers": {
+        "cache-control": "public, max-age=2592000"
+      },
       "continue": true
     },
-    { "handle": "filesystem" },
-    { "src": "(.*)", "dest": "/index.html" }
-  ]
+    {
+      "handle": "filesystem"
+    },
+    {
+      "src": "(.*)",
+      "dest": "/index.html"
+    }
+  ],
+  "git": {
+    "deploymentEnabled": {
+      "main": true,
+      "*": false
+    }
+  }
 }
