@@ -24,6 +24,10 @@
       "continue": true
     },
     {
+      "src": "/sitemap.xml",
+      "dest": "https://api.miternerita.app/sitemap.xml"
+    },
+    {
       "handle": "filesystem"
     },
     {

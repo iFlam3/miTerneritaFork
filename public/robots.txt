@@ -11,4 +11,4 @@ Disallow: /home/event/*/ticket
 Disallow: /concierto
 Disallow: /puerta
 
-Sitemap: https://api.miternerita.app/sitemap.xml
+Sitemap: https://miternerita.app/sitemap.xml
