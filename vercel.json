@@ -31,6 +31,10 @@
       "handle": "filesystem"
     },
     {
+      "src": "/\\.well-known/(.*)",
+      "status": 404
+    },
+    {
       "src": "(.*)",
       "dest": "/index.html"
     }

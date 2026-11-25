@@ -1,0 +1,19 @@
+# Mi Ternerita House
+
+> Local de conciertos, fiestas y eventos en Maracaibo, Venezuela. En esta web se compran las entradas: se paga con Pago Móvil, transferencia o Zelle, y el QR de la entrada llega por correo.
+
+## Páginas principales
+
+- [Inicio y cartelera](https://miternerita.app/): próximos eventos, conciertos y eventos pasados.
+- [Contacto](https://miternerita.app/home/contact): teléfono, correo, Instagram, dirección y horario del local.
+- [Trabaja con nosotros](https://miternerita.app/trabaja-con-nosotros): postulaciones para trabajar en el local.
+
+## Legal
+
+- [Términos y condiciones](https://miternerita.app/legal/terminos)
+- [Política de privacidad](https://miternerita.app/legal/privacidad)
+- [Aviso legal](https://miternerita.app/legal/aviso-legal)
+
+## Opcional
+
+- [Sitemap](https://miternerita.app/sitemap.xml): incluye la página de cada evento a la venta.
