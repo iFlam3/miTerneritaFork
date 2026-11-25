@@ -78,12 +78,11 @@ export class CreateEventsComponent {
     category: new FormControl<string>('evento', { nonNullable: true })
   });
 
-  /** Fotos del evento: el flyer es la portada; image1..3, la galería. */
+  /** Fotos del evento (image2 ya no se usa: no se muestra en la web). */
   readonly fotos = [
-    { key: 'flyer', label: 'Flyer', hint: 'Portada 4:5' },
-    { key: 'image1', label: 'Imagen 1', hint: 'Galería' },
-    { key: 'image2', label: 'Imagen 2', hint: 'Galería' },
-    { key: 'image3', label: 'Imagen 3', hint: 'Galería' }
+    { key: 'flyer', label: 'Flyer', hint: 'Tarjeta del evento (4:5)' },
+    { key: 'image1', label: 'Foto del evento', hint: 'Fondo del evento, la compra y la entrada' },
+    { key: 'image3', label: 'Foto del carrusel', hint: 'Fondo del carrusel del inicio (horizontal)' }
   ] as const;
 
   cerrar() {

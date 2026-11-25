@@ -73,7 +73,7 @@ export class TicketComponent implements OnInit {
   day = computed(() => parseEventDate(this.event()?.date));
   time = computed(() => formatTime12(this.event()?.time));
   flyer = computed(() => eventImage(this.event()?.flyer || this.event()?.image1) || 'assets/img/optimized/fondo1.webp');
-  backdrop = computed(() => eventImage(this.event()?.image3 || this.event()?.image1) || this.flyer());
+  backdrop = computed(() => eventImage(this.event()?.image1 || this.event()?.image3) || this.flyer());
 
   /** Entradas por tipo: las de mesa cuentan sus puestos; el resto, el selector +/-. */
   cantidades = computed(() => {
