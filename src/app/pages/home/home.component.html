@@ -69,7 +69,7 @@
                     </div>
 
                     <figure class="slide-poster">
-                        <img src="{{ ev.flyerUrl }}" [alt]="'Flyer de ' + ev.name" loading="lazy" />
+                        <img src="{{ ev.flyerUrl }}" [alt]="'Flyer de ' + ev.name" loading="lazy" width="400" height="500" />
                         @if (comprando()[ev.idEvents]; as n) {
                             <span class="buying" [class.is-short]="false" [attr.aria-label]="n + (n === 1 ? ' persona comprando ahora' : ' personas comprando ahora')"><span class="dot"></span>{{ n }}<span class="buying-text"> {{ n === 1 ? 'persona comprando' : 'personas comprando' }} ahora</span></span>
                         }
@@ -206,7 +206,7 @@
 
                         <div class="panel-body" [id]="'ev-panel-' + ev.idEvents" [attr.inert]="active ? null : ''">
                             <div class="panel-body-inner">
-                                <img class="panel-poster" src="{{ ev.flyerUrl }}" [alt]="'Flyer de ' + ev.name" />
+                                <img class="panel-poster" src="{{ ev.flyerUrl }}" [alt]="'Flyer de ' + ev.name" width="400" height="500" />
 
                                 <div class="panel-info">
                                     <div class="panel-chips">
@@ -306,7 +306,7 @@
                         }
                     </div>
                 </div>
-                <img src="{{ next.flyerUrl }}" [alt]="'Flyer de ' + next.name" loading="lazy" />
+                <img src="{{ next.flyerUrl }}" [alt]="'Flyer de ' + next.name" loading="lazy" width="400" height="500" />
             </div>
         }
 
@@ -326,7 +326,7 @@
                         @if (comprando()[ev.idEvents]; as n) {
                             <span class="buying" [attr.aria-label]="n + (n === 1 ? ' persona comprando ahora' : ' personas comprando ahora')"><span class="dot"></span>{{ n }}<span class="buying-text"> {{ n === 1 ? 'persona comprando' : 'personas comprando' }} ahora</span></span>
                         }
-                        <img src="{{ ev.flyerUrl }}" [alt]="'Flyer de ' + ev.name" loading="lazy" />
+                        <img src="{{ ev.flyerUrl }}" [alt]="'Flyer de ' + ev.name" loading="lazy" width="400" height="500" />
                         <div class="concert-info">
                             <span class="tm-chip tm-chip--media">{{ ev.day | date: "EEE d MMM" | capFirst }} · {{ ev.timeLabel }}</span>
                             <h3>{{ ev.name }}</h3>
@@ -378,7 +378,7 @@
                 @for (ev of past(); track ev.idEvents; let i = $index) {
                     <a class="past-card" [routerLink]="['/home/event', ev.idEvents]" appReveal [revealDelay]="i * 60">
                         <div class="past-media">
-                            <img src="{{ ev.flyerUrl }}" [alt]="'Flyer de ' + ev.name" loading="lazy" />
+                            <img src="{{ ev.flyerUrl }}" [alt]="'Flyer de ' + ev.name" loading="lazy" width="400" height="500" />
                             <span class="past-badge">Finalizado</span>
                         </div>
                         <div class="past-info">

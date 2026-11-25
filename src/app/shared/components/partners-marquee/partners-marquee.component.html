@@ -10,7 +10,7 @@
                 @for (p of partners; track $index) {
                     <li>
                         @if (p.logo) {
-                            <img src="{{ p.logo }}" [alt]="p.name" [class.invert-dark]="p.invertDark" loading="lazy" />
+                            <img src="{{ p.logo }}" [alt]="p.name" [class.invert-dark]="p.invertDark" loading="lazy" [attr.width]="p.w" [attr.height]="p.h" />
                         } @else {
                             <span class="logo-text">{{ p.name }}</span>
                         }

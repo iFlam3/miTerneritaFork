@@ -15,6 +15,9 @@ export interface Partner {
   url?: string;
   /** Logo con partes negras que desaparecen en modo oscuro: ahí se pinta blanco. */
   invertDark?: boolean;
+  /** Tamaño real del logo (px): reserva su hueco antes de que cargue. */
+  w?: number;
+  h?: number;
 }
 
 /**
@@ -23,11 +26,11 @@ export interface Partner {
  * Sin `logo` se muestra el nombre como texto.
  */
 export const PARTNERS: Partner[] = [
-  { name: 'Loop', logo: 'assets/img/partners/loop.svg' },
+  { name: 'Loop', logo: 'assets/img/partners/loop.svg', w: 296, h: 128 },
   { name: 'Santa Teresa' },
-  { name: 'Smirnoff', logo: 'assets/img/partners/smirnoff.png' },
-  { name: 'Old Parr', logo: 'assets/img/partners/old-parr.png', invertDark: true },
-  { name: "Buchanan's", logo: 'assets/img/partners/buchanans.png' }
+  { name: 'Smirnoff', logo: 'assets/img/partners/smirnoff.png', w: 296, h: 91 },
+  { name: 'Old Parr', logo: 'assets/img/partners/old-parr.png', invertDark: true, w: 278, h: 156 },
+  { name: "Buchanan's", logo: 'assets/img/partners/buchanans.png', w: 640, h: 181 }
 ];
 
 /** Espacios del local (sección "Conoce nuestros espacios"). */
