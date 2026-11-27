@@ -200,15 +200,11 @@ onSubmit() {
     return isNaN(date.getTime()) ? null : date.toISOString();
   };
 
-  const toIsoTime = (dateValue: string | null | undefined, timeValue: string | null | undefined) => {
-    if (!timeValue) return null;
-    const baseDate = dateValue || new Date().toISOString().split('T')[0];
-    const date = new Date(`${baseDate}T${timeValue}:00`);
-    return isNaN(date.getTime()) ? null : date.toISOString();
-  };
-
   formValue.date = toIsoDate(formValue.date) as any;
-  formValue.time = toIsoTime(formValue.date, formValue.time) as any;
+  // La hora va tal cual ("21:00" o "21:00:00"): el backend la guarda en una columna TIME.
+  // Antes se armaba con la fecha ya convertida a ISO, salía inválida y la hora nunca se enviaba
+  // (y convertida a UTC habría quedado 4 horas corrida).
+  formValue.time = (formValue.time || null) as any;
 
   if (hasFiles) {
     const formData = new FormData();
