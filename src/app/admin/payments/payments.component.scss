@@ -161,3 +161,16 @@
     cursor: progress;
   }
 }
+
+// Quién registró el pago desde el admin (registro asistido).
+.registro {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  color: var(--text-subtle);
+  font-size: 0.75rem;
+}
+
+a.btn {
+  text-decoration: none;
+}

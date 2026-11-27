@@ -42,11 +42,7 @@
 
                 <button type="button" class="btn-sec" (click)="openConciliar()" title="Cruzar el estado de cuenta del banco con los pagos pendientes"><i class="pi pi-building-columns"></i> Conciliar banco</button>
                 <button type="button" class="btn-sec" (click)="exportar()" [disabled]="exportando()" title="Descargar los pagos filtrados en Excel"><i class="pi" [class.pi-file-excel]="!exportando()" [class.pi-spinner]="exportando()" [class.pi-spin]="exportando()"></i> Exportar Excel</button>
-                <button
-                    class="btn"
-                    icon=""
-                    (click)="openCreateModal()"
-                >Agregar Pago</button>  
+                <a class="btn" routerLink="/admin/payments/registrar"><i class="pi pi-plus"></i> Registrar pago</a>  
               </div>
               </div>
 
@@ -111,6 +107,7 @@
                 <td class="column-table-left sel"><p-tableCheckbox [value]="payment" /></td>
                 <td class="mr-5 c-fecha">
                 {{ payment.date | date: 'dd/MM/yyyy hh:mm a' : 'VE' }}
+                @if (payment.registradoPor) { <small class="registro" [title]="'Registrado por ' + payment.registradoPor.name"><i class="pi pi-user-edit"></i> {{ payment.registradoPor.name }}</small> }
                 </td>
                 <td class="persona">
                   <strong>{{ payment.idUser?.name }}</strong>

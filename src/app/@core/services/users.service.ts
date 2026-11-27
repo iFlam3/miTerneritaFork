@@ -44,6 +44,13 @@ export class UsersService {
     );
   }
 
+  /** Registro asistido: alta de un cliente sin cuenta (correo opcional, sin contraseña). */
+  crearClienteRapido(datos: { name: string; lastName: string; cedula: string; phone: string; email?: string }) {
+    return this.http.post<{ id: number; name: string; lastName: string; cedula: string; email: string | null; phone: string | null }>(
+      `${this.api}/users/cliente-rapido`, datos
+    );
+  }
+
   searchUserByCedula(cedula: string){
     return this.http.get(`${this.api}/users/${cedula}`).pipe(
       tap((res) => {

@@ -29,6 +29,7 @@
                 }
                 <div><dt>Fecha del pago</dt><dd>{{ (payment.fechaTransferencia || date) | date: 'dd/MM/yyyy' }}</dd></div>
                 <div><dt>Total</dt><dd class="fuerte">${{ total | number: '1.2-2' }}</dd></div>
+                @if (payment.registradoPor) { <div><dt>Registrado por</dt><dd>{{ payment.registradoPor.name }} {{ payment.registradoPor.lastName }}</dd></div> }
                 @if (totalBs) {
                     <div><dt>En bolívares</dt><dd>Bs {{ totalBs }}@if (tasaDolar) {<small>tasa {{ tasaDolar | number: '1.2-4' }}</small>}</dd></div>
                 }

@@ -12,6 +12,17 @@ export interface ReporteEvento {
   totales: { entradas: number; consumo: number; general: number };
 }
 
+/** GET /entrada/:firma: lo que ve quien recibe el enlace de su entrada. */
+export interface EntradaPublica {
+  noDocumento: string;
+  cliente: string;
+  evento: { nombre: string; fecha: string; hora: string; salon: string | null };
+  entradas: { nombre: string; cantidad: number }[];
+  asientos: string[];
+  /** PNG del QR como data URL. */
+  qr: string;
+}
+
 /** POST /payment/conciliar */
 export interface Conciliacion {
   filas: number;
@@ -37,6 +48,16 @@ export class PaymentService {
     const fd = new FormData();
     fd.append('archivo', archivo);
     return this.http.post<Conciliacion>(`${this.api}/payment/conciliar`, fd);
+  }
+
+  /** Firma del enlace público de la entrada (/entrada/<firma>) de un pago aprobado. */
+  enlaceEntrada(id: number) {
+    return this.http.get<{ firma: string }>(`${this.api}/payment/${id}/enlace-entrada`);
+  }
+
+  /** La entrada pública (sin sesión) a partir de su firma. */
+  entradaPublica(firma: string) {
+    return this.http.get<EntradaPublica>(`${this.api}/entrada/${encodeURIComponent(firma)}`);
   }
 
   /** Aprueba varios pagos: cada uno emite su QR y su correo. */

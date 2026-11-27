@@ -1,6 +1,7 @@
 import { AsyncPipe, CommonModule } from '@angular/common';
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { BadgeModule } from 'primeng/badge';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
@@ -15,7 +16,6 @@ import { toObservable } from '@angular/core/rxjs-interop';
 import { UpdatePaymentComponent } from './components/update-payment/update-payment.component';
 import { Payment } from '../../@core/models/payment.model';
 import { LoaderComponent } from '../../@core/components/loader/loader.component';
-import { CreatePaymentComponent } from './components/create-payment/create-payment.component';
 import { ConciliarComponent } from './components/conciliar/conciliar.component';
 
 /** Día del pago en hora local, 'AAAA-MM-DD', comparable con un <input type=date>. */
@@ -35,7 +35,8 @@ const diaLocal = (fecha: string | Date) => {
     BadgeModule,
     FormsModule,
     ReactiveFormsModule,
-    LoaderComponent
+    LoaderComponent,
+    RouterLink
     // AsyncPipe
   ],
   templateUrl: './payments.component.html',
@@ -121,20 +122,6 @@ export class PaymentsComponent implements OnInit{
 
   limpiarFiltros() {
     this.filtros.set({ evento: null, estado: '', desde: '', hasta: '' });
-  }
-
-  openCreateModal(){
-     this.isModalOpen = true;
-    this.ref = this.dialogService.open(CreatePaymentComponent, {
-      header: 'Registrar pago',
-      width: '760px',
-      modal: true,
-      closable: true,
-      breakpoints: { '960px': '94vw' }
-    });
-    this.ref.onClose.subscribe(() => {
-      this.isModalOpen = false;
-    });
   }
 
   openConciliar() {

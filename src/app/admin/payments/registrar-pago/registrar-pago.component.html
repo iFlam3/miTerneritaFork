@@ -1,0 +1,254 @@
+<div class="rp">
+    <header class="rp-head">
+        <a routerLink="/admin/payments" class="rp-volver"><i class="pi pi-arrow-left"></i> Pagos</a>
+        <h1>Registrar pago</h1>
+        <p>Compra en nombre de un cliente que no usa la web. Al final el pago queda aprobado y la entrada se envía o se comparte.</p>
+    </header>
+
+    <!-- Progreso -->
+    @if (!resultado()) {
+        <ol class="rp-pasos" aria-label="Pasos">
+            @for (p of pasos; track p; let i = $index) {
+                <li [class.hecho]="i < paso()" [class.actual]="i === paso()">
+                    <button type="button" (click)="irA(i)" [disabled]="i >= paso()" [attr.aria-current]="i === paso() ? 'step' : null">
+                        <span class="num">@if (i < paso()) { <i class="pi pi-check"></i> } @else { {{ i + 1 }} }</span>
+                        <span class="txt">{{ p }}</span>
+                    </button>
+                </li>
+            }
+        </ol>
+        <div class="rp-barra"><span [style.width.%]="(paso() / (pasos.length - 1)) * 100"></span></div>
+    }
+
+    <!-- Una tarjeta por paso: entra por la derecha al avanzar y por la izquierda al volver -->
+    @for (p of [paso()]; track p) {
+        <section class="rp-card" [class.atras]="dir() === 'atras'">
+            @switch (p) {
+                <!-- ============ 1. CLIENTE ============ -->
+                @case (0) {
+                    <h2><span>1</span> ¿Para quién es la compra?</h2>
+                    <p class="rp-ayuda">Busca por cédula. Si no tiene cuenta, la creamos con sus datos básicos.</p>
+
+                    @if (!cliente()) {
+                        <form class="rp-ced" (ngSubmit)="buscar()">
+                            <select class="tm-select" [ngModel]="tipoCed()" (ngModelChange)="tipoCed.set($event)" name="tipo" aria-label="Tipo de documento">
+                                <option value="V">V</option>
+                                <option value="E">E</option>
+                                <option value="J">J</option>
+                            </select>
+                            <input class="tm-input" name="ced" inputmode="numeric" placeholder="Número de cédula" autocomplete="off"
+                                [ngModel]="numCed()" (ngModelChange)="numCed.set($event); nuevo.set(false)" />
+                            <button type="submit" class="tm-btn tm-btn--primary" [disabled]="buscando()">
+                                <i class="pi" [class.pi-search]="!buscando()" [class.pi-spinner]="buscando()" [class.pi-spin]="buscando()"></i> Buscar
+                            </button>
+                        </form>
+                    }
+
+                    @if (cliente(); as c) {
+                        <div class="rp-cliente">
+                            <span class="av">{{ c.name.charAt(0) }}{{ c.lastName.charAt(0) }}</span>
+                            <div>
+                                <strong>{{ c.name }} {{ c.lastName }}</strong>
+                                <small>{{ c.cedula }} · {{ c.phone || 'sin teléfono' }}</small>
+                                <small>{{ c.email || 'Sin correo: al final compartirás la entrada por WhatsApp o impresa' }}</small>
+                            </div>
+                            <button type="button" class="rp-link" (click)="cambiarCliente()">Cambiar</button>
+                        </div>
+                    }
+
+                    @if (nuevo()) {
+                        <div class="rp-nuevo">
+                            <p class="rp-aviso"><i class="pi pi-user-plus"></i> <span>No hay ningún cliente con la cédula <b>{{ cedula() }}</b>. Completa sus datos para crearlo.</span></p>
+                            <div class="rp-grid2">
+                                <label><span>Nombre</span><input class="tm-input" [ngModel]="nombre()" (ngModelChange)="nombre.set($event)" maxlength="25" autocomplete="off" /></label>
+                                <label><span>Apellido</span><input class="tm-input" [ngModel]="apellido()" (ngModelChange)="apellido.set($event)" maxlength="25" autocomplete="off" /></label>
+                                <label><span>Teléfono</span><input class="tm-input" inputmode="tel" placeholder="0414 123 4567" [ngModel]="telefono()" (ngModelChange)="telefono.set($event)" maxlength="15" /></label>
+                                <label><span>Correo <em>(opcional)</em></span><input class="tm-input" type="email" placeholder="Para enviarle el QR" [ngModel]="correo()" (ngModelChange)="correo.set($event)" maxlength="80" /></label>
+                            </div>
+                        </div>
+                    }
+                }
+
+                <!-- ============ 2. EVENTO ============ -->
+                @case (1) {
+                    <h2><span>2</span> Elige el evento</h2>
+                    @if (eventos().length) {
+                        <div class="rp-eventos">
+                            @for (e of eventos(); track e.idEvents) {
+                                <button type="button" class="rp-evento" [class.sel]="evento()?.idEvents === e.idEvents" (click)="elegirEvento(e)">
+                                    <img [src]="flyer(e)" alt="" loading="lazy" width="400" height="500" (error)="sinFoto($event)" />
+                                    <span class="info">
+                                        <strong>{{ e.name }}</strong>
+                                        <small>{{ dia(e) | date: "EEE d 'de' MMM" }} · {{ hora(e) }}</small>
+                                    </span>
+                                    @if (evento()?.idEvents === e.idEvents) { <i class="pi pi-check-circle marca"></i> }
+                                </button>
+                            }
+                        </div>
+                        @if (evento() && !tickets().length) {
+                            <p class="rp-aviso">Este evento no tiene entradas a la venta.</p>
+                        }
+                    } @else {
+                        <p class="rp-vacio">No hay eventos próximos a la venta.</p>
+                    }
+                }
+
+                <!-- ============ 3. MESAS Y ASIENTOS ============ -->
+                @case (2) {
+                    <h2><span>3</span> Mesas y asientos</h2>
+                    @if (conMapa() && plano(); as pl) {
+                        <p class="rp-ayuda">Toca un puesto, o el número de la mesa para tomarla completa.
+                            <button type="button" class="rp-link" (click)="refrescarSalon()"><i class="pi pi-refresh"></i> Actualizar</button></p>
+                        <app-plano-salon [plano]="pl" [zonas]="salon()!.zonas" [tickets]="tickets()" [ocupados]="salon()!.ocupados"
+                            [seleccion]="asientos()" (asiento)="onAsiento($event)" (mesa)="onMesa($event)" (mesas)="onMesas($event)" />
+                    }
+                    @if (sueltos().length) {
+                        @if (conMapa()) { <h3 class="rp-sub">Entradas sin mesa</h3> }
+                        <ul class="rp-lista">
+                            @for (t of sueltos(); track t.idTicket) {
+                                <li>
+                                    <span><strong>{{ t.name }}</strong><small>${{ +t.price | number: '1.2-2' }}</small></span>
+                                    <span class="rp-stepper">
+                                        <button type="button" (click)="sumar(t, -1)" [disabled]="!cantidad(t)" aria-label="Quitar"><i class="pi pi-minus"></i></button>
+                                        <b>{{ cantidad(t) }}</b>
+                                        <button type="button" (click)="sumar(t, 1)" aria-label="Añadir"><i class="pi pi-plus"></i></button>
+                                    </span>
+                                </li>
+                            }
+                        </ul>
+                    }
+                    <div class="rp-resumen-mini">
+                        @for (x of entradas(); track x.idTicket) { <span>{{ x.cantidad }}× {{ x.nombre }}</span> }
+                        @if (asientos().length) { <span class="puestos">Puestos: {{ asientosOrdenados().join(', ') }}</span> }
+                        @if (!entradas().length) { <span class="tm-muted">Aún no hay entradas elegidas.</span> }
+                    </div>
+                }
+
+                <!-- ============ 4. CONSUMO ============ -->
+                @case (3) {
+                    <h2><span>4</span> Consumo <em>(opcional)</em></h2>
+                    @if (menu(); as m) {
+                        @for (s of m.secciones; track s.nombre) {
+                            <h3 class="rp-sub">{{ s.nombre }}</h3>
+                            <ul class="rp-lista">
+                                @for (p of s.productos; track p.nombre) {
+                                    <li>
+                                        <span><strong>{{ p.nombre }}</strong><small>${{ p.precioUsd | number: '1.2-2' }}</small></span>
+                                        <span class="rp-stepper">
+                                            <button type="button" (click)="sumarProducto(p, -1)" [disabled]="!qty(p)" aria-label="Quitar"><i class="pi pi-minus"></i></button>
+                                            <b>{{ qty(p) }}</b>
+                                            <button type="button" (click)="sumarProducto(p, 1)" aria-label="Añadir"><i class="pi pi-plus"></i></button>
+                                        </span>
+                                    </li>
+                                }
+                            </ul>
+                        }
+                    } @else {
+                        <p class="rp-vacio"><i class="pi pi-info-circle"></i> Este evento no tiene consumo pre-ordenado. Puedes seguir.</p>
+                    }
+                }
+
+                <!-- ============ 5. PAGO ============ -->
+                @case (4) {
+                    <h2><span>5</span> Pago</h2>
+                    <p class="rp-ayuda">Sin comprobante: regístralo solo si ya verificaste el pago (por chat, llamada o en caja).</p>
+                    <div class="rp-metodos" role="radiogroup" aria-label="Método de pago">
+                        @for (m of metodos; track m) {
+                            <button type="button" role="radio" [attr.aria-checked]="metodo() === m" [class.sel]="metodo() === m" (click)="metodo.set(m)">
+                                <i class="pi" [class.pi-money-bill]="m === 'Efectivo'" [class.pi-mobile]="m === 'Pago Móvil'" [class.pi-building-columns]="m === 'Transferencia'" [class.pi-dollar]="m === 'Zelle'"></i>
+                                {{ m }}
+                            </button>
+                        }
+                    </div>
+                    @if (metodo() !== 'Efectivo') {
+                        <div class="rp-grid2">
+                            @if (metodo() !== 'Zelle') {
+                                <label><span>Banco de origen</span>
+                                    <select class="tm-select" [ngModel]="bancoOrigen()" (ngModelChange)="bancoOrigen.set($event)">
+                                        <option value="" disabled>Elige el banco</option>
+                                        @for (b of bancos; track b) { <option [value]="b">{{ b }}</option> }
+                                    </select>
+                                </label>
+                            }
+                            <label><span>Referencia</span><input class="tm-input" inputmode="numeric" [ngModel]="referencia()" (ngModelChange)="referencia.set($event)" maxlength="30" /></label>
+                            <label><span>Fecha del pago</span><input class="tm-input" type="date" [ngModel]="fecha()" (ngModelChange)="fecha.set($event)" /></label>
+                        </div>
+                    }
+                    <label class="rp-check">
+                        <input type="checkbox" [ngModel]="verificado()" (ngModelChange)="verificado.set($event)" />
+                        <span>Confirmo que el pago de <b>${{ totalUsd() | number: '1.2-2' }}</b>@if (totalBs()) { (Bs {{ totalBs() | number: '1.2-2' }}) } ya fue recibido.</span>
+                    </label>
+                }
+
+                <!-- ============ 6. VERIFICACIÓN ============ -->
+                @case (5) {
+                    <h2><span>6</span> Verifica los datos</h2>
+                    <div class="rp-verif">
+                        <div><dt>Cliente <button type="button" class="rp-link" (click)="irA(0)">Editar</button></dt>
+                            <dd>{{ datosCliente().name }} {{ datosCliente().lastName }} · {{ datosCliente().cedula }}<br />
+                                <small>{{ datosCliente().email || 'Sin correo' }} · {{ datosCliente().phone || 'Sin teléfono' }}</small>
+                                @if (!cliente()?.id) { <small class="nuevo">Se creará como cliente nuevo</small> }</dd></div>
+                        <div><dt>Evento <button type="button" class="rp-link" (click)="irA(1)">Editar</button></dt>
+                            <dd>{{ evento()?.name }}<br /><small>{{ dia(evento()!) | date: "EEEE d 'de' MMMM" }} · {{ hora(evento()) }}</small></dd></div>
+                        <div><dt>Entradas <button type="button" class="rp-link" (click)="irA(2)">Editar</button></dt>
+                            <dd>@for (x of entradas(); track x.idTicket) { {{ x.cantidad }}× {{ x.nombre }} — ${{ x.total | number: '1.2-2' }}<br /> }
+                                @if (asientos().length) { <small>Puestos: {{ asientosOrdenados().join(', ') }}</small> }</dd></div>
+                        <div><dt>Consumo <button type="button" class="rp-link" (click)="irA(3)">Editar</button></dt>
+                            <dd>@for (l of lineasConsumo(); track l.nombre) { {{ l.cantidad }}× {{ l.nombre }} — ${{ l.total | number: '1.2-2' }}<br /> } @empty { <span class="tm-muted">Sin consumo</span> }</dd></div>
+                        <div><dt>Pago <button type="button" class="rp-link" (click)="irA(4)">Editar</button></dt>
+                            <dd>{{ metodo() }}@if (metodo() !== 'Efectivo') { · {{ metodo() === 'Zelle' ? 'Zelle' : bancoOrigen() }} · Ref. {{ referencia() }} · {{ fecha() }} }</dd></div>
+                        <div class="total"><dt>Total</dt><dd>${{ totalUsd() | number: '1.2-2' }} @if (totalBs()) { <small>Bs {{ totalBs() | number: '1.2-2' }}</small> }</dd></div>
+                    </div>
+                    <p class="rp-ayuda"><i class="pi pi-info-circle"></i> Al registrar, el pago queda <b>aprobado</b>@if (datosCliente().email) { y el QR se envía a <b>{{ datosCliente().email }}</b>}.</p>
+                }
+
+                <!-- ============ LISTO ============ -->
+                @default {
+                    @if (resultado(); as r) {
+                        <div class="rp-listo">
+                            <span class="ok"><i class="pi pi-check"></i></span>
+                            <h2>Pago registrado</h2>
+                            <p>N° {{ r.noDocumento }} · aprobado. {{ datosCliente().name }} ya tiene su entrada para <b>{{ evento()?.name }}</b>.</p>
+                            <p class="rp-correo">
+                                @if (r.correo) { <i class="pi pi-envelope"></i> QR enviado a <b>{{ r.correo }}</b> }
+                                @else { <i class="pi pi-info-circle"></i> Sin correo: comparte la entrada por otro medio. }
+                            </p>
+                            @if (r.url) {
+                                <div class="rp-compartir">
+                                    <a class="tm-btn tm-btn--primary wa" [href]="whatsapp()" target="_blank" rel="noopener"><i class="pi pi-whatsapp"></i> WhatsApp</a>
+                                    @if (puedeCompartirNativo) { <button type="button" class="tm-btn" (click)="compartir()"><i class="pi pi-share-alt"></i> Compartir</button> }
+                                    <button type="button" class="tm-btn" (click)="copiar()"><i class="pi pi-copy"></i> Copiar enlace</button>
+                                    <a class="tm-btn" [href]="r.url" target="_blank" rel="noopener"><i class="pi pi-print"></i> Ver e imprimir</a>
+                                </div>
+                                <p class="rp-url">{{ r.url }}</p>
+                            }
+                            <div class="rp-fin">
+                                <button type="button" class="tm-btn" (click)="otro()"><i class="pi pi-plus"></i> Registrar otro</button>
+                                <a class="tm-btn tm-btn--ghost" routerLink="/admin/payments">Ir a pagos</a>
+                            </div>
+                        </div>
+                    }
+                }
+            }
+        </section>
+    }
+
+    @if (!resultado()) {
+        <footer class="rp-nav">
+            <button type="button" class="tm-btn" (click)="atras()" [disabled]="paso() === 0 || registrando()"><i class="pi pi-arrow-left"></i> Atrás</button>
+            <span class="rp-total">
+                @if (totalUsd()) { Total <b>${{ totalUsd() | number: '1.2-2' }}</b> }
+                @if (vence() && paso() > 2) { <small class="rp-vence"><i class="pi pi-lock"></i> Apartado hasta {{ vence() | date: 'h:mm a' }}</small> }
+            </span>
+            @if (paso() < pasos.length - 1) {
+                <button type="button" class="tm-btn tm-btn--primary" (click)="siguiente()" [disabled]="!puedeSeguir() || apartando()">
+                    @if (apartando()) { <i class="pi pi-spin pi-spinner"></i> Apartando } @else { Siguiente <i class="pi pi-arrow-right"></i> }
+                </button>
+            } @else {
+                <button type="button" class="tm-btn tm-btn--primary" (click)="registrar()" [disabled]="registrando()">
+                    <i class="pi" [class.pi-check]="!registrando()" [class.pi-spinner]="registrando()" [class.pi-spin]="registrando()"></i> Registrar
+                </button>
+            }
+        </footer>
+    }
+</div>

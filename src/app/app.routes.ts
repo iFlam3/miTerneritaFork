@@ -98,6 +98,13 @@ export const routes: Routes = [
         ]
     },
     {
+        // Entrada compartida por el personal (registro asistido): pública, sin layout, imprimible.
+        path: 'entrada/:firma',
+        loadComponent: () => import('./pages/entrada/entrada.component').then(m => m.EntradaComponent),
+        title: 'Tu entrada',
+        data: { noindex: true }
+    },
+    {
         // Escáner de entradas (PWA de la puerta): a pantalla completa, fuera de los layouts.
         path: 'puerta',
         canActivate: [PuertaGuard],
@@ -146,6 +153,11 @@ export const routes: Routes = [
                 path: 'payments',
                 loadComponent: () => import('./admin/payments/payments.component').then(m => m.PaymentsComponent),
                 title: 'Pagos'
+            },
+            {
+                path: 'payments/registrar',
+                loadComponent: () => import('./admin/payments/registrar-pago/registrar-pago.component').then(m => m.RegistrarPagoComponent),
+                title: 'Registrar pago'
             },
             {
                 path: 'postulaciones',

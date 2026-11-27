@@ -1,0 +1,38 @@
+<main class="ent">
+    @if (entrada(); as e) {
+        <article class="ent-card">
+            <header>
+                <img src="assets/img/logo-264.webp" alt="" width="66" height="55" />
+                <div>
+                    <small>Mi Ternerita House</small>
+                    <h1>{{ e.evento.nombre }}</h1>
+                    <p>{{ dia() | date: "EEEE d 'de' MMMM, y" }} · {{ hora() }}@if (e.evento.salon) { · {{ e.evento.salon }} }</p>
+                </div>
+            </header>
+
+            <img class="qr" [src]="e.qr" alt="Código QR de la entrada" width="300" height="300" />
+            <p class="ent-nota">Muestra este código en la puerta. También puedes entrar con tu cédula.</p>
+
+            <dl>
+                <div><dt>A nombre de</dt><dd>{{ e.cliente }}</dd></div>
+                <div><dt>Entradas</dt><dd>@for (x of e.entradas; track x.nombre) { {{ x.cantidad }}× {{ x.nombre }}<br /> }</dd></div>
+                @if (e.asientos.length) { <div><dt>Puestos</dt><dd class="puestos">{{ e.asientos.join(', ') }}</dd></div> }
+                <div><dt>N° de compra</dt><dd>{{ e.noDocumento }}</dd></div>
+            </dl>
+
+            <div class="ent-acciones">
+                <button type="button" class="tm-btn tm-btn--primary" (click)="imprimir()"><i class="pi pi-print"></i> Imprimir</button>
+                <a class="tm-btn" [href]="e.qr" download="entrada-mi-ternerita.png"><i class="pi pi-download"></i> Descargar QR</a>
+            </div>
+        </article>
+    } @else if (error()) {
+        <article class="ent-card ent-error">
+            <i class="pi pi-ticket"></i>
+            <h1>Entrada no encontrada</h1>
+            <p>El enlace no es válido o la compra ya no está activa. Escríbenos y te ayudamos.</p>
+            <a class="tm-btn" href="/home/contact">Contacto</a>
+        </article>
+    } @else {
+        <article class="ent-card"><div class="tm-skeleton" style="width: 100%; aspect-ratio: 1; max-width: 300px; margin: auto" role="status" aria-label="Cargando entrada"></div></article>
+    }
+</main>

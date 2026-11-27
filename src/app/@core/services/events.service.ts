@@ -19,6 +19,11 @@ export class EventsService {
     return this.http.post<{ vence: string }>(`${this.api}/reservas`, { idEvents, cantidad, asientos });
   }
 
+  /** Suelta el apartado propio de un evento (registro asistido cancelado). */
+  soltarReserva(idEvents: number) {
+    return this.http.delete(`${this.api}/reservas/${idEvents}`);
+  }
+
   /** Ids de eventos agotados (SOLD OUT). Público, sin cantidades. */
   agotados() {
     return this.http.get<number[]>(`${this.api}/reservas/agotados`);
