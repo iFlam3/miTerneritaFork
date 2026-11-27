@@ -1,4 +1,4 @@
-/** GET /salon/plano: el plano fijo del salón (47 mesas, 304 puestos). */
+/** GET /salon/plano: el plano fijo del salón (49 mesas, 332 puestos). */
 export interface MesaPlano {
   mesa: number;
   x: number;
